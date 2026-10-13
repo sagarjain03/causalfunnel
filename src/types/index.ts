@@ -25,6 +25,8 @@ export type SessionSummary = {
   first_seen: string;
   last_seen: string;
   pages: string[];
+  /** Any event of the session is on a page ending in /checkout.html. */
+  reached_checkout: boolean;
 };
 
 export type SessionsPage = {

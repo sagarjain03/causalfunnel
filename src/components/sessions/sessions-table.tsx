@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { StatusPill } from "@/components/sessions/status-pill";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -37,7 +38,7 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
       setCursor(data.nextCursor);
     } catch (err) {
       console.error(err);
-      toast.error("Could not load more sessions", { description: "Check your connection and try again." });
+      toast.error("Could not load more journeys", { description: "Check your connection and try again." });
     } finally {
       setLoading(false);
     }
@@ -45,43 +46,56 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      {/* overflow-x-auto is only a fallback: below sm the table shows just id, status and last seen. */}
+      <div className="-mx-2 overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Session</TableHead>
-              <TableHead className="text-right">Events</TableHead>
-              <TableHead className="hidden text-right sm:table-cell">Clicks</TableHead>
-              <TableHead className="hidden text-right sm:table-cell">Pages</TableHead>
-              <TableHead className="text-right">Last seen</TableHead>
+            <TableRow className="border-line hover:bg-transparent">
+              <TableHead className="text-muted-foreground">Journey</TableHead>
+              <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Events</TableHead>
+              <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Clicks</TableHead>
+              <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Pages</TableHead>
+              <TableHead className="text-muted-foreground">Status</TableHead>
+              <TableHead className="text-right text-muted-foreground">Last seen</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sessions.map((session) => {
-              const href = `/dashboard/sessions/${session.session_id}`;
+              const href = `/dashboard/journeys/${session.session_id}`;
               return (
                 // Whole row navigates; the id cell is the real link for keyboard, middle-click and screen readers.
-                <TableRow key={session.session_id} onClick={() => router.push(href)} className="cursor-pointer hover:bg-muted">
+                <TableRow
+                  key={session.session_id}
+                  onClick={() => router.push(href)}
+                  className="cursor-pointer border-line hover:bg-panel-raised"
+                >
                   <TableCell>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Link href={href} onClick={(e) => e.stopPropagation()} className="font-mono text-xs hover:text-primary">
+                        <Link href={href} onClick={(e) => e.stopPropagation()} className="font-mono text-xs hover:text-sage">
                           {shortId(session.session_id)}
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent className="font-mono">{session.session_id}</TooltipContent>
                     </Tooltip>
                   </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{formatNumber(session.event_count)}</TableCell>
-                  <TableCell className="hidden text-right font-mono tabular-nums text-event-click sm:table-cell">
+                  <TableCell className="hidden text-right tabular-nums sm:table-cell">
+                    {formatNumber(session.event_count)}
+                  </TableCell>
+                  <TableCell className="hidden text-right tabular-nums sm:table-cell">
                     {formatNumber(session.click_count)}
                   </TableCell>
-                  <TableCell className="hidden text-right font-mono tabular-nums sm:table-cell">
+                  <TableCell className="hidden text-right tabular-nums sm:table-cell">
                     {formatNumber(session.pages.length)}
                   </TableCell>
-                  <TableCell className="text-right text-muted-foreground">
+                  <TableCell>
+                    <StatusPill reachedCheckout={session.reached_checkout} />
+                  </TableCell>
+                  <TableCell className="text-right whitespace-nowrap text-muted-foreground">
+                    {/* Narrow form below sm so id + status + last seen fit 375px without scrolling. */}
                     <time dateTime={session.last_seen} title={session.last_seen}>
-                      {formatRelative(session.last_seen, now)}
+                      <span className="sm:hidden">{formatRelative(session.last_seen, now, "narrow")}</span>
+                      <span className="hidden sm:inline">{formatRelative(session.last_seen, now)}</span>
                     </time>
                   </TableCell>
                 </TableRow>
@@ -92,11 +106,11 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <p className="font-mono text-xs text-muted-foreground">
-          {formatNumber(sessions.length)} session{sessions.length === 1 ? "" : "s"} shown
+        <p className="text-xs text-muted-foreground tabular-nums">
+          {formatNumber(sessions.length)} journey{sessions.length === 1 ? "" : "s"} shown
         </p>
         {cursor && (
-          <Button variant="outline" onClick={loadMore} disabled={loading}>
+          <Button variant="outline" className="rounded-full" onClick={loadMore} disabled={loading}>
             {loading ? "Loading…" : "Load more"}
           </Button>
         )}

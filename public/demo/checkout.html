@@ -3,105 +3,67 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Northwind Supply — Checkout</title>
-  <style>
-    :root { --bg: #09090b; --card: #111113; --muted: #18181b; --border: #27272a; --fg: #fafafa; --dim: #a1a1aa; --primary: #ff6b35; --accent: #22d3ee; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-    a { color: inherit; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-    nav { position: sticky; top: 0; background: rgba(9, 9, 11, .9); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); z-index: 10; }
-    nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
-    .logo { font-weight: 700; text-decoration: none; margin-right: auto; }
-    .logo span { color: var(--primary); }
-    nav a.link { color: var(--dim); text-decoration: none; font-size: 14px; }
-    nav a.link:hover, nav a.active { color: var(--fg); }
-    h1 { margin: 48px 0 32px; font-size: 36px; letter-spacing: -0.02em; }
-    .layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; padding-bottom: 96px; }
-    @media (max-width: 767px) { .layout { grid-template-columns: 1fr; } }
-    fieldset { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 24px; margin: 0 0 24px; }
-    legend { padding: 0 8px; font-weight: 600; }
-    label { display: block; font-size: 14px; color: var(--dim); margin: 16px 0 6px; }
-    input, select { width: 100%; background: var(--muted); color: var(--fg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font: inherit; }
-    input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
-    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .radio { display: flex; align-items: center; gap: 10px; color: var(--fg); margin: 12px 0 0; }
-    .radio input { width: auto; }
-    .summary { position: sticky; top: 84px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-    .summary h2 { margin: 0 0 16px; font-size: 18px; }
-    .line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
-    .line span:last-child { font-variant-numeric: tabular-nums; }
-    .total { font-weight: 700; font-size: 18px; border: 0; }
-    .promo { display: flex; gap: 8px; margin: 16px 0; }
-    .promo button { background: transparent; color: var(--accent); border: 1px solid var(--border); border-radius: 8px; padding: 0 14px; cursor: pointer; }
-    .place { width: 100%; background: var(--primary); color: #0a0a0a; font-weight: 700; border: 0; border-radius: 10px; padding: 16px; font-size: 16px; cursor: pointer; }
-    .note { color: var(--dim); font-size: 13px; text-align: center; margin: 12px 0 0; }
-    footer { padding: 48px 0 96px; border-top: 1px solid var(--border); color: var(--dim); font-size: 14px; }
-  </style>
+  <title>Northwind — Checkout</title>
+  <link rel="stylesheet" href="/demo/store.css">
 </head>
 <body>
-  <nav>
-    <div class="wrap">
-      <a class="logo" href="/demo">North<span>wind</span></a>
-      <a class="link" href="/demo">Home</a>
-      <a class="link" href="/demo/products.html">Products</a>
-      <a class="link active" href="/demo/checkout.html">Checkout</a>
-    </div>
-  </nav>
-
-  <main class="wrap">
+  <header class="co-head">
+    <a class="logo" href="/demo">northwind<span class="dot" aria-hidden="true"></span><small>.in</small></a>
     <h1>Checkout</h1>
-    <!-- Demo only: the form never submits anywhere. -->
-    <form class="layout" onsubmit="return false">
-      <div>
-        <fieldset>
-          <legend>Contact</legend>
-          <label for="email">Email</label>
-          <input id="email" type="email" placeholder="you@example.com" autocomplete="off">
-        </fieldset>
-        <fieldset>
-          <legend>Shipping address</legend>
-          <div class="two">
-            <div><label for="first">First name</label><input id="first" autocomplete="off"></div>
-            <div><label for="last">Last name</label><input id="last" autocomplete="off"></div>
-          </div>
-          <label for="street">Street</label>
-          <input id="street" autocomplete="off">
-          <div class="two">
-            <div><label for="city">City</label><input id="city" autocomplete="off"></div>
-            <div><label for="zip">Postcode</label><input id="zip" autocomplete="off"></div>
-          </div>
-          <label for="country">Country</label>
-          <select id="country"><option>United States</option><option>India</option><option>United Kingdom</option><option>Germany</option></select>
-        </fieldset>
-        <fieldset>
-          <legend>Delivery</legend>
-          <label class="radio"><input type="radio" name="ship" checked> Standard — free, 3–5 days</label>
-          <label class="radio"><input type="radio" name="ship"> Express — $15, next day</label>
-        </fieldset>
-        <fieldset>
-          <legend>Payment</legend>
-          <p style="margin:8px 0 0;color:var(--dim)">Demo store — no payment details are collected.</p>
-          <label class="radio"><input type="radio" name="pay" checked> Pay on delivery</label>
-          <label class="radio"><input type="radio" name="pay"> Invoice</label>
-        </fieldset>
-      </div>
-
-      <aside class="summary">
-        <h2>Order summary</h2>
-        <div class="line"><span>Ridge 30 Daypack</span><span>$129.00</span></div>
-        <div class="line"><span>Lumen Headlamp</span><span>$45.00</span></div>
-        <div class="line"><span>Shipping</span><span>$0.00</span></div>
-        <div class="promo"><input placeholder="Promo code" aria-label="Promo code"><button type="button">Apply</button></div>
-        <div class="line total"><span>Total</span><span>$174.00</span></div>
-        <button class="place" type="submit">Place order</button>
-        <p class="note">This is a demo. Nothing will be charged.</p>
-      </aside>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" role="img" aria-label="Secure checkout"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+  </header>
+  <main class="checkout">
+    <!-- Demo only: the form never submits anywhere and asks for no payment details. -->
+    <form onsubmit="return false">
+      <section class="step">
+        <h2><span>1</span> Delivery address</h2>
+        <div class="two">
+          <label class="field">Full name<input autocomplete="off"></label>
+          <label class="field">Mobile number<input inputmode="tel" autocomplete="off"></label>
+        </div>
+        <label class="field">Flat, house no., building<input autocomplete="off"></label>
+        <label class="field">Area, street, village<input autocomplete="off"></label>
+        <div class="two">
+          <label class="field">Pincode<input inputmode="numeric" autocomplete="off"></label>
+          <label class="field">State<select><option>Uttar Pradesh</option><option>Delhi</option><option>Maharashtra</option><option>Karnataka</option></select></label>
+        </div>
+        <button class="btn alt" type="button">Use this address</button>
+      </section>
+      <section class="step">
+        <h2><span>2</span> Delivery speed</h2>
+        <label class="option"><input type="radio" name="ship" checked><span><b>FREE Standard delivery</b><br><span class="muted">Thursday – Friday</span></span></label>
+        <label class="option"><input type="radio" name="ship"><span><b>One-day delivery — ₹99</b><br><span class="muted">Tomorrow by 9 pm</span></span></label>
+      </section>
+      <section class="step">
+        <h2><span>3</span> Payment method</h2>
+        <p class="muted" style="margin-top: 0">Demo store: no payment details are collected.</p>
+        <label class="option"><input type="radio" name="pay" checked><span><b>Cash on delivery</b></span></label>
+        <label class="option"><input type="radio" name="pay"><span><b>Pay later (demo)</b></span></label>
+      </section>
     </form>
+
+    <aside class="summary" aria-label="Order summary">
+      <button class="btn alt block" type="button">Place your order</button>
+      <p class="muted" style="font-size: 12px">Demo store: nothing is ordered or charged.</p>
+      <h3 style="margin: 10px 0">Order summary</h3>
+      <div class="item"><div class="img contain" style="--img: url('/demo/img/p-1.jpg')" role="img" aria-label="Backpack"></div><span>Trail 28L Backpack<br><b>₹1,799</b></span></div>
+      <div class="item"><div class="img contain" style="--img: url('/demo/img/p-9.jpg')" role="img" aria-label="Mug"></div><span>Stoneware Coffee Mug<br><b>₹249</b></span></div>
+      <div class="line"><span>Items:</span><span>₹2,048</span></div>
+      <div class="line"><span>Delivery:</span><span>₹0</span></div>
+      <div class="line"><span>Promotion applied:</span><span>−₹100</span></div>
+      <div class="line total"><span>Order total:</span><span>₹1,948</span></div>
+    </aside>
   </main>
 
-  <footer>
-    <div class="wrap">© Northwind Supply — a demo store for CausalFunnel analytics.</div>
+  <a class="to-top" href="#">Back to top</a>
+  <footer class="foot">
+    <div class="cols">
+      <div><h4>Get to know us</h4><a href="/demo">About Northwind</a><a href="/demo">Careers</a><a href="/demo">Press releases</a></div>
+      <div><h4>Connect with us</h4><a href="/demo">Instagram</a><a href="/demo">X</a><a href="/demo">YouTube</a></div>
+      <div><h4>Make money with us</h4><a href="/demo">Sell on Northwind</a><a href="/demo">Affiliate program</a><a href="/demo">Advertise</a></div>
+      <div><h4>Let us help you</h4><a href="/demo/checkout.html">Your account</a><a href="/demo/checkout.html">Returns centre</a><a href="/demo/checkout.html">Help</a></div>
+    </div>
+    <div class="base">© Northwind — a demo store for CausalFunnel analytics. Not a real shop.</div>
   </footer>
 
   <script src="/tracker.js" data-debug defer></script>

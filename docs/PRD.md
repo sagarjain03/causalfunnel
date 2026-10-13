@@ -31,7 +31,7 @@ This is a hiring assignment for the Full Stack Engineer role at CausalFunnel. Re
 - Configurable endpoint via `data-endpoint` attribute on the script tag.
 
 ### 3.2 Demo site (must have)
-- 2–3 static HTML pages (e.g. Home, Products, Checkout) in `public/demo/` with the tracker included, so reviewers can generate data instantly.
+- 4 static HTML pages (Home, Products, Product detail, Checkout) styled as an Amazon-style marketplace with its own "Northwind" brand in `public/demo/` with the tracker included, so reviewers can generate data instantly.
 
 ### 3.3 API (must have)
 - `POST /api/events` — receive one event or a batch, validate, store.

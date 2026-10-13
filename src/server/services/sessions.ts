@@ -45,6 +45,8 @@ export async function listSessions({ limit, cursor }: { limit: number; cursor?: 
         first_seen: { $min: "$timestamp" },
         last_seen: { $max: "$timestamp" },
         pages: { $addToSet: "$page_url" },
+        // true if any event is on the checkout page ($max over booleans: true > false)
+        reached_checkout: { $max: { $regexMatch: { input: "$page_url", regex: /\/checkout\.html$/ } } },
       },
     },
     {
@@ -57,6 +59,7 @@ export async function listSessions({ limit, cursor }: { limit: number; cursor?: 
         first_seen: 1,
         last_seen: 1,
         pages: 1,
+        reached_checkout: 1,
       },
     },
   ];

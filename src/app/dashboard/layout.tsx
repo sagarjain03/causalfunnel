@@ -1,18 +1,38 @@
-import { MobileNav } from "@/components/dashboard/mobile-nav";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { Suspense } from "react";
+import { ActivePillNav } from "@/components/dashboard/active-pill-nav";
+import { Greeting } from "@/components/dashboard/greeting";
+import { LiveStatus } from "@/components/dashboard/live-status";
+import { Logo } from "@/components/dashboard/logo";
+import { PillNav } from "@/components/dashboard/pill-nav";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// Static shell only: no data reads here (layouts can't stream uncached data under Cache Components).
+// Static shell: frame, top bar, greeting. Only the Live dot and the active nav pill stream (each in its own Suspense).
 export default function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   return (
     <TooltipProvider>
-      <div className="flex min-h-screen w-full">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <MobileNav />
-          <main className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 md:p-8">{children}</main>
-        </div>
+      <div className="m-4 flex min-h-[calc(100dvh-2rem)] flex-col gap-6 rounded-frame border border-line bg-app p-3 md:p-6">
+        <header className="grid grid-cols-[1fr_auto] items-center gap-3 md:grid-cols-[1fr_auto_1fr]">
+          <Logo />
+          <div className="col-span-2 row-start-2 md:col-span-1 md:row-start-1 md:col-start-2">
+            <Suspense fallback={<PillNav pathname={null} />}>
+              <ActivePillNav />
+            </Suspense>
+          </div>
+          <div className="flex items-center justify-end gap-2 md:col-start-3">
+            <Suspense fallback={<Skeleton className="h-9 w-20 rounded-full" />}>
+              <LiveStatus />
+            </Suspense>
+            {/* Plain <a>: /demo is a static file behind a rewrite, not an app route. */}
+            <Button asChild className="hidden h-9 rounded-full px-4 sm:inline-flex">
+              <a href="/demo">Open demo store</a>
+            </Button>
+          </div>
+        </header>
+        <Greeting />
+        <main className="flex flex-col gap-4">{children}</main>
       </div>
       <Toaster />
     </TooltipProvider>

@@ -4,6 +4,13 @@ import type { OverviewStats } from "@/types";
 
 type CountFacet = { n: number }[];
 
+/** Time of the newest event (for the Live/Idle dot), or null if there are none. Uses the { timestamp: -1 } index. */
+export async function getLastEventAt(): Promise<Date | null> {
+  await connectDb();
+  const newest = await EventModel.findOne({}, { _id: 0, timestamp: 1 }).sort({ timestamp: -1 }).lean();
+  return newest?.timestamp ?? null;
+}
+
 /** Totals for the dashboard overview, computed in a single $facet query. */
 export async function getOverviewStats(): Promise<OverviewStats> {
   await connectDb();

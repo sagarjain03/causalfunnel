@@ -1,23 +1,14 @@
 import { Suspense } from "react";
 import { OverviewStats } from "@/components/dashboard/overview-stats";
-import { PageHeader } from "@/components/dashboard/page-header";
-import { StatCardSkeleton } from "@/components/dashboard/stat-card-skeleton";
+import { OverviewStatsSkeleton } from "@/components/dashboard/overview-stats-skeleton";
 
+// 12-column bento grid (DESIGN.md §6). Step A has only the totals card; Step B fills the rest.
 export default function OverviewPage() {
   return (
-    <>
-      <PageHeader eyebrow="Dashboard" title="Overview" description="Everything the tracker has recorded so far." />
-      <Suspense
-        fallback={
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {Array.from({ length: 4 }, (_, i) => (
-              <StatCardSkeleton key={i} />
-            ))}
-          </div>
-        }
-      >
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+      <Suspense fallback={<OverviewStatsSkeleton />}>
         <OverviewStats />
       </Suspense>
-    </>
+    </div>
   );
 }

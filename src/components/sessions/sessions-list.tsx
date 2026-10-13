@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { Users } from "lucide-react";
+import { Route } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { SessionsTable } from "@/components/sessions/sessions-table";
 import { listSessions } from "@/server/services/sessions";
@@ -11,16 +11,17 @@ async function loadFirstPage() {
   return { ...page, fetchedAt: Date.now() };
 }
 
-/** Streams behind <Suspense>: first page of sessions, newest first. */
+/** Streams behind <Suspense>: first page of journeys, newest first. */
 export async function SessionsList() {
   const { sessions, nextCursor, fetchedAt } = await loadFirstPage();
 
   if (sessions.length === 0) {
     return (
       <EmptyState
-        icon={Users}
-        title="No sessions yet"
-        description="Sessions appear here once the tracker sends events. Open the demo store to create one."
+        icon={Route}
+        title="No journeys yet"
+        description="Journeys appear here once the tracker sends events. Open the demo store to create one."
+        className="border-0 bg-transparent py-10"
       />
     );
   }

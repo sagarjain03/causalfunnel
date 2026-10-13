@@ -3,75 +3,168 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Northwind Supply — Products</title>
-  <style>
-    :root { --bg: #09090b; --card: #111113; --muted: #18181b; --border: #27272a; --fg: #fafafa; --dim: #a1a1aa; --primary: #ff6b35; --accent: #22d3ee; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-    a { color: inherit; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-    nav { position: sticky; top: 0; background: rgba(9, 9, 11, .9); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); z-index: 10; }
-    nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
-    .logo { font-weight: 700; text-decoration: none; margin-right: auto; }
-    .logo span { color: var(--primary); }
-    nav a.link { color: var(--dim); text-decoration: none; font-size: 14px; }
-    nav a.link:hover, nav a.active { color: var(--fg); }
-    .head { padding: 48px 0 24px; }
-    .head h1 { margin: 0 0 4px; font-size: 36px; letter-spacing: -0.02em; }
-    .head p { margin: 0; color: var(--dim); }
-    .filters { display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-    .chip { background: var(--muted); color: var(--dim); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
-    .chip.on { color: var(--fg); border-color: var(--accent); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding-bottom: 96px; }
-    .product { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-    .thumb { height: 220px; background: linear-gradient(135deg, var(--muted), var(--border)); display: grid; place-items: center; color: var(--dim); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
-    .info { padding: 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-    .info h3 { margin: 0; font-size: 17px; }
-    .info p { margin: 0; color: var(--dim); font-size: 14px; flex: 1; }
-    .row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
-    .price { font-weight: 700; font-variant-numeric: tabular-nums; }
-    .add { background: var(--primary); color: #0a0a0a; font-weight: 600; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
-    footer { padding: 48px 0 96px; border-top: 1px solid var(--border); color: var(--dim); font-size: 14px; }
-  </style>
+  <title>Northwind — Festive deals</title>
+  <link rel="stylesheet" href="/demo/store.css">
 </head>
 <body>
-  <nav>
-    <div class="wrap">
-      <a class="logo" href="/demo">North<span>wind</span></a>
-      <a class="link" href="/demo">Home</a>
-      <a class="link active" href="/demo/products.html">Products</a>
-      <a class="link" href="/demo/checkout.html">Checkout</a>
-    </div>
+  <header class="top">
+    <a class="logo" href="/demo">northwind<span class="dot" aria-hidden="true"></span><small>.in</small></a>
+    <a class="hit deliver" href="/demo/checkout.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <span><small>Deliver to Noida 201301</small><b>Update location</b></span>
+    </a>
+    <form class="search" action="/demo/products.html" role="search">
+      <label class="sr-only" for="cat">Category</label>
+      <select id="cat" name="cat"><option>All</option><option>Electronics</option><option>Fashion</option><option>Home</option></select>
+      <label class="sr-only" for="q">Search Northwind</label>
+      <input id="q" name="q" placeholder="Search Northwind.in">
+      <button type="submit" aria-label="Search">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+    </form>
+    <a class="hit hide-md" href="/demo/checkout.html"><small>Hello, sign in</small><b>Account &amp; Lists</b></a>
+    <a class="hit hide-md" href="/demo/checkout.html"><small>Returns</small><b>&amp; Orders</b></a>
+    <a class="hit cart" href="/demo/checkout.html">
+      <span class="count">
+        <svg width="34" height="28" viewBox="0 0 34 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 3h5l4 16h17l4-11H9"/><circle cx="12" cy="24" r="2"/><circle cx="25" cy="24" r="2"/></svg>
+        <span>2</span>
+      </span>
+      Cart
+    </a>
+  </header>
+  <nav class="subnav" aria-label="Categories">
+    <a class="all" href="/demo/products.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>All</a>
+    <a href="/demo/products.html">Fresh</a>
+    <a href="/demo/products.html">Today's Deals</a>
+    <a href="/demo/products.html">Mobiles</a>
+    <a href="/demo/products.html">Electronics</a>
+    <a href="/demo/products.html">Fashion</a>
+    <a href="/demo/products.html">Home &amp; Kitchen</a>
+    <a href="/demo/products.html">Sports &amp; Outdoors</a>
+    <a href="/demo/products.html">Bestsellers</a>
+    <a href="/demo/products.html">New Releases</a>
+    <a href="/demo/checkout.html">Customer Service</a>
   </nav>
 
-  <main class="wrap">
-    <div class="head">
-      <h1>All products</h1>
-      <p>9 items · free shipping over $75</p>
-    </div>
+  <div class="results">
+    <span><b>1-9 of 9 results</b> for <span style="color: #c7511f">"festive deals"</span></span>
+    <label>Sort by: <select><option>Featured</option><option>Price: Low to High</option><option>Price: High to Low</option><option>Avg. customer review</option></select></label>
+  </div>
+  <main class="listing">
+    <aside class="filters" aria-label="Filters">
+      <h3>Category</h3>
+      <label><input type="checkbox" checked> All</label>
+      <label><input type="checkbox"> Bags &amp; luggage</label>
+      <label><input type="checkbox"> Electronics</label>
+      <label><input type="checkbox"> Fashion</label>
+      <label><input type="checkbox"> Home &amp; kitchen</label>
+      <h3>Customer reviews</h3>
+      <label><input type="checkbox"> <span class="stars">★★★★☆</span> &amp; up</label>
+      <label><input type="checkbox"> <span class="stars">★★★☆☆</span> &amp; up</label>
+      <h3>Price</h3>
+      <label><input type="checkbox"> Under ₹500</label>
+      <label><input type="checkbox"> ₹500 – ₹1,500</label>
+      <label><input type="checkbox"> ₹1,500 – ₹3,000</label>
+      <label><input type="checkbox"> Over ₹3,000</label>
+      <h3>Delivery</h3>
+      <label><input type="checkbox"> Get it tomorrow</label>
+      <label><input type="checkbox"> Free delivery</label>
+    </aside>
 
-    <div class="filters">
-      <button class="chip on" type="button">All</button>
-      <button class="chip" type="button">Packs</button>
-      <button class="chip" type="button">Shells</button>
-      <button class="chip" type="button">Camp</button>
-    </div>
-
-    <div class="grid">
-      <article class="product"><div class="thumb">Pack</div><div class="info"><h3>Ridge 30 Daypack</h3><p>30L, rain cover, hip belt pockets.</p><div class="row"><span class="price">$129</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Shell</div><div class="info"><h3>Squall Rain Shell</h3><p>3-layer waterproof, pit zips, 310g.</p><div class="row"><span class="price">$219</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Camp</div><div class="info"><h3>Ember Stove Kit</h3><p>Stove, pot and windscreen in one.</p><div class="row"><span class="price">$89</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Pack</div><div class="info"><h3>Summit 55 Pack</h3><p>Multi-day pack with adjustable torso.</p><div class="row"><span class="price">$249</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Shell</div><div class="info"><h3>Drift Wind Jacket</h3><p>Packs into its own chest pocket.</p><div class="row"><span class="price">$99</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Camp</div><div class="info"><h3>Lumen Headlamp</h3><p>400 lumens, USB-C rechargeable.</p><div class="row"><span class="price">$45</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Camp</div><div class="info"><h3>Hollow Sleeping Pad</h3><p>R-value 4.2, 480g, quiet fabric.</p><div class="row"><span class="price">$139</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Pack</div><div class="info"><h3>Crest Hip Pack</h3><p>3L, for short runs and town days.</p><div class="row"><span class="price">$49</span><button class="add" type="button">Add to cart</button></div></div></article>
-      <article class="product"><div class="thumb">Shell</div><div class="info"><h3>Ridge Insulated Vest</h3><p>Recycled synthetic fill, warm when wet.</p><div class="row"><span class="price">$119</span><button class="add" type="button">Add to cart</button></div></div></article>
-    </div>
+    <section class="grid" aria-label="Products">
+      <article class="product">
+        <a href="/demo/product.html?id=1"><div class="img contain" style="--img: url('/demo/img/p-1.jpg')" role="img" aria-label="Trail 28L Laptop Backpack, Water-Resistant"></div></a>
+        <h3><a href="/demo/product.html?id=1">Trail 28L Laptop Backpack, Water-Resistant</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.4 out of 5">★★★★☆</span><span>2,318</span></div>
+        <div><span class="badge">-28%</span> <span class="price"><sup>₹</sup>1,799</span></div>
+        <div class="mrp">M.R.P.: <s>₹2,499</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=2"><div class="img contain" style="--img: url('/demo/img/p-2.jpg')" role="img" aria-label="Wave Over-Ear Wireless Headphones, 40h Battery"></div></a>
+        <h3><a href="/demo/product.html?id=2">Wave Over-Ear Wireless Headphones, 40h Battery</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.2 out of 5">★★★★☆</span><span>5,102</span></div>
+        <div><span class="badge">-45%</span> <span class="price"><sup>₹</sup>2,199</span></div>
+        <div class="mrp">M.R.P.: <s>₹3,999</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=3"><div class="img contain" style="--img: url('/demo/img/p-3.jpg')" role="img" aria-label="Stride Running Sneakers, Breathable Mesh"></div></a>
+        <h3><a href="/demo/product.html?id=3">Stride Running Sneakers, Breathable Mesh</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.1 out of 5">★★★★☆</span><span>1,206</span></div>
+        <div><span class="badge">-24%</span> <span class="price"><sup>₹</sup>2,499</span></div>
+        <div class="mrp">M.R.P.: <s>₹3,299</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=4"><div class="img contain" style="--img: url('/demo/img/p-4.jpg')" role="img" aria-label="Pulse Smartwatch with SpO2 and 1.8in Display"></div></a>
+        <h3><a href="/demo/product.html?id=4">Pulse Smartwatch with SpO2 and 1.8in Display</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.0 out of 5">★★★★☆</span><span>8,941</span></div>
+        <div><span class="badge">-45%</span> <span class="price"><sup>₹</sup>3,299</span></div>
+        <div class="mrp">M.R.P.: <s>₹5,999</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=5"><div class="img contain" style="--img: url('/demo/img/p-5.jpg')" role="img" aria-label="Insulated Steel Water Bottle, 1 Litre"></div></a>
+        <h3><a href="/demo/product.html?id=5">Insulated Steel Water Bottle, 1 Litre</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.5 out of 5">★★★★★</span><span>12,450</span></div>
+        <div><span class="badge">-36%</span> <span class="price"><sup>₹</sup>449</span></div>
+        <div class="mrp">M.R.P.: <s>₹699</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=6"><div class="img contain" style="--img: url('/demo/img/p-6.jpg')" role="img" aria-label="Arc LED Desk Lamp, 3 Colour Modes"></div></a>
+        <h3><a href="/demo/product.html?id=6">Arc LED Desk Lamp, 3 Colour Modes</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.3 out of 5">★★★★☆</span><span>967</span></div>
+        <div><span class="badge">-31%</span> <span class="price"><sup>₹</sup>1,099</span></div>
+        <div class="mrp">M.R.P.: <s>₹1,599</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=7"><div class="img contain" style="--img: url('/demo/img/p-7.jpg')" role="img" aria-label="Everyday Cotton Crew T-Shirt"></div></a>
+        <h3><a href="/demo/product.html?id=7">Everyday Cotton Crew T-Shirt</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.0 out of 5">★★★★☆</span><span>3,388</span></div>
+        <div><span class="badge">-50%</span> <span class="price"><sup>₹</sup>299</span></div>
+        <div class="mrp">M.R.P.: <s>₹599</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=8"><div class="img contain" style="--img: url('/demo/img/p-8.jpg')" role="img" aria-label="Polarised Square Sunglasses, UV400"></div></a>
+        <h3><a href="/demo/product.html?id=8">Polarised Square Sunglasses, UV400</a></h3>
+        <div class="rating"><span class="stars" aria-label="3.9 out of 5">★★★★☆</span><span>742</span></div>
+        <div><span class="badge">-40%</span> <span class="price"><sup>₹</sup>899</span></div>
+        <div class="mrp">M.R.P.: <s>₹1,499</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+      <article class="product">
+        <a href="/demo/product.html?id=9"><div class="img contain" style="--img: url('/demo/img/p-9.jpg')" role="img" aria-label="Stoneware Coffee Mug, 350 ml"></div></a>
+        <h3><a href="/demo/product.html?id=9">Stoneware Coffee Mug, 350 ml</a></h3>
+        <div class="rating"><span class="stars" aria-label="4.6 out of 5">★★★★★</span><span>2,015</span></div>
+        <div><span class="badge">-38%</span> <span class="price"><sup>₹</sup>249</span></div>
+        <div class="mrp">M.R.P.: <s>₹399</s></div>
+        <div class="muted" style="font-size: 12px">FREE delivery by Thursday</div>
+        <button class="btn add" type="button">Add to cart</button>
+      </article>
+    </section>
   </main>
 
-  <footer>
-    <div class="wrap">© Northwind Supply — a demo store for CausalFunnel analytics.</div>
+  <a class="to-top" href="#">Back to top</a>
+  <footer class="foot">
+    <div class="cols">
+      <div><h4>Get to know us</h4><a href="/demo">About Northwind</a><a href="/demo">Careers</a><a href="/demo">Press releases</a></div>
+      <div><h4>Connect with us</h4><a href="/demo">Instagram</a><a href="/demo">X</a><a href="/demo">YouTube</a></div>
+      <div><h4>Make money with us</h4><a href="/demo">Sell on Northwind</a><a href="/demo">Affiliate program</a><a href="/demo">Advertise</a></div>
+      <div><h4>Let us help you</h4><a href="/demo/checkout.html">Your account</a><a href="/demo/checkout.html">Returns centre</a><a href="/demo/checkout.html">Help</a></div>
+    </div>
+    <div class="base">© Northwind — a demo store for CausalFunnel analytics. Not a real shop.</div>
   </footer>
 
   <script src="/tracker.js" data-debug defer></script>

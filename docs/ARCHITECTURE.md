@@ -7,7 +7,7 @@
 | Framework | **Next.js 16** (App Router, Turbopack) | One repo, one deploy. Route Handlers are our Node.js backend. |
 | Language | **TypeScript** (strict) | Shared types between API and UI. |
 | UI | **React 19**, **Tailwind CSS v4**, **shadcn/ui** | Accessible primitives we own as source code. |
-| Fonts | **General Sans** (self-hosted, `next/font/local`) + **Geist Mono** for session ids | See DESIGN.md §4. |
+| Fonts | **Onest** (`next/font/google`, weights 300–600) + **Geist Mono** for session ids | See DESIGN.md §4. General Sans was dropped: its ITF Free Font License §02 forbids distributing the font files through a public repository. |
 | Animation | **motion** for the navbar pill slide only, **anime.js v4** for number count-up, bar grow and heatmap replay | See DESIGN.md §9 and RULES.md §3. |
 | Icons | **lucide-react** | Default for shadcn. |
 | Validation | **zod** v4 | Validate every API input at the boundary. |
@@ -130,9 +130,12 @@ causalfunnel/
 ├── docs/                         # PRD, ARCHITECTURE, RULES, PHASES, DESIGN, MEMORY
 ├── public/
 │   ├── tracker.js                # the embeddable script (plain JS, no build)
-│   └── demo/                     # static demo site that includes tracker.js
-│       ├── index.html
-│       ├── products.html
+│   └── demo/                     # static "Northwind" store (Amazon-style layout, own brand) with tracker.js
+│       ├── store.css             # shared styles for the 4 pages
+│       ├── img/                  # free-license photos (Unsplash/Pexels), see MEMORY.md
+│       ├── index.html            # home: header + search, hero, deal cards, best sellers
+│       ├── products.html         # listing with filters
+│       ├── product.html          # product detail + buy box (one URL for all products)
 │       └── checkout.html
 ├── scripts/
 │   └── seed.ts                   # fake sessions for screenshots / demo
@@ -141,7 +144,6 @@ causalfunnel/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx              # redirects to /dashboard (or landing)
 │   │   ├── globals.css           # design tokens + .hatch utility (see DESIGN.md)
-│   │   ├── fonts/                # General Sans woff2 (300, 400, 500, 600)
 │   │   ├── dashboard/
 │   │   │   ├── layout.tsx        # rounded frame + top bar (logo, pill navbar, live dot, demo button)
 │   │   │   ├── page.tsx          # overview bento

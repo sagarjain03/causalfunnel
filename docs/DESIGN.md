@@ -2,7 +2,7 @@
 
 ## 1. Direction: "Bento on dark"
 
-A dark bento dashboard: the app sits in a rounded frame, data lives in mixed-size cards, and one quiet main color (sage-teal) carries all the data. A small orange accent marks the few things that need attention. The signature texture is a **diagonal hatch** on bars and fills.
+A deep-black bento dashboard with charcoal surfaces and glossy glass controls: the app sits in a rounded frame, data lives in mixed-size cards, and one quiet main color (sage-teal) carries all the data. A small orange accent marks the few things that need attention. The signature texture is a **diagonal hatch** on bars and fills.
 
 Reference: a dark logistics dashboard with a floating pill navbar, mixed-size cards, hatched bars, a sage main color and an orange accent. We borrow its structure and texture, not its content.
 
@@ -15,15 +15,17 @@ Dark is the only theme (`<html class="dark">`).
 All tokens live in `src/app/globals.css` as CSS variables. Components use Tailwind token classes, never hex.
 
 ### Surfaces & text
+Neutral charcoal (no blue tint). The background is deep black; every surface is a step lighter than the background.
+
 | Token | Hex | Use |
 |---|---|---|
-| `--frame` | `#232427` | Outermost window background, around the app frame |
-| `--app` | `#141517` | The app canvas inside the frame |
-| `--panel` | `#1C1D20` | Cards |
-| `--panel-raised` | `#24262A` | Inner tiles, chips, icon squares, hover background, inputs |
-| `--line` | `#2C2E33` | All borders and dividers |
-| `--text` | `#F2F3F5` | Primary text, big numbers |
-| `--text-muted` | `#8B9099` | Labels, secondary text, axis text |
+| `--frame` | `#000000` | Outermost window background, around the app frame |
+| `--app` | `#0A0A0A` | The app canvas inside the frame |
+| `--panel` | `#141414` | Cards |
+| `--panel-raised` | `#1C1C1C` | Inner tiles, icon squares, hover background, inputs |
+| `--line` | `#262626` | All borders and dividers |
+| `--text` | `#F2F2F2` | Primary text, big numbers |
+| `--text-muted` | `#8F8F8F` | Labels, secondary text, axis text |
 
 ### Data & accent
 | Token | Hex | Use |
@@ -76,11 +78,10 @@ shadcn components read their own variable names. These are aliases, so the compo
 Because `--primary` is orange, components whose *default* variant is primary (Badge, Tabs, etc.) must be used with a non-primary variant, or they spend the orange budget.
 
 ### Contrast (checked)
-- `--text-muted` on `--panel`: 5.25:1.
-- `--text-muted` on `--panel-raised`: 4.72:1.
-- `--sage` on `--panel`: 8.99:1.
-- `--orange` on `--panel`: 5.42:1.
-- `--app` text on `--orange`: 5.88:1.
+- `--text-muted` on `--panel`: 5.79:1 (≈5.4:1 on `--panel-raised`).
+- `--sage` on `--panel`: ≈9.9:1.
+- `--orange` on `--panel`: ≈6:1.
+- `--app` text on `--orange`: 6.37:1.
 - White on orange is 3.11:1, which fails for body text, so it isn't used.
 
 ## 3. Texture: diagonal hatch
@@ -105,7 +106,7 @@ background-image: repeating-linear-gradient(
 
 | Role | Font | Spec |
 |---|---|---|
-| Everything | **General Sans**, self-hosted via `next/font/local` | Weights 300, 400, 500 and 600, woff2 files in `src/app/fonts/` (from Fontshare) |
+| Everything | **Onest**, via `next/font/google` (self-hosted by Next at build time) | Weights 300, 400, 500 and 600. General Sans was dropped: its ITF Free Font License §02 forbids distributing the font files through a public repository. |
 | Session ids only | **Geist Mono** (already installed) | `text-xs`, nothing else is mono |
 
 | Use | Spec |
@@ -115,7 +116,7 @@ background-image: repeating-linear-gradient(
 | Card title | 500 weight, 18px |
 | Body | 400, 14px |
 | Small labels, axis | 400, 12px, `--text-muted` |
-| Numbers in tables, times, coordinates | General Sans with `tabular-nums` (not mono) |
+| Numbers in tables, times, coordinates | Onest with `tabular-nums` (not mono) |
 
 Rules:
 - **No all-caps labels anywhere.** No `uppercase` and no letter-spaced eyebrow labels.
@@ -151,15 +152,36 @@ Rules:
 - Icon square: 36px, `--panel-raised`, 10px radius, a 16px lucide icon in `--text`.
 - Hover (clickable cards and rows only): the background changes to `--panel-raised`. No lift, shadow or scale.
 
+### Glass controls
+Glossy charcoal glass, from the user's reference (dark pill buttons with a bevel and a sheen), is used on **controls only**:
+- the pill navbar and its active pill
+- the Live/Idle pill and the date pill
+- buttons
+- chips and status pills
+- the Phase 4 heatmap toolbar
+
+**Never on cards, the frame, or anything behind data.**
+
+It's built from two utilities in `globals.css`, using the tokens `--glass-*`:
+- `glass`:
+  - a top-to-bottom gradient `--glass-top #262626` → `--glass-bottom #111111`
+  - a faint 115° sheen band
+  - a 1px edge at white 7%
+  - an inset top highlight (white 12%) and an inset bottom shadow
+  - a soft drop shadow
+- `glass-shine`: the same sheen, bevel and shadow over an existing background color. Used for the orange primary button and the active nav pill.
+
+There's no `backdrop-filter` blur: on a flat black background there's nothing behind the control to blur. Glass controls are the only elements with shadows; cards stay flat with a 1px border.
+
 ### Chips & pills
-- **Chip** (page path, filter): `--panel-raised`, full radius, 12px text, 4×10px padding.
+- **Chip** (page path, filter): `glass`, full radius, 12px text, 4×10px padding.
 - **Change pill:**
   - `↑ 12%` in `--up` or `↓ 8%` in `--down`, on that color at 12% opacity.
   - **"New this week"** in `--text-muted` when the previous period has no data.
   - **"No change"** when the values are equal.
 - **Status pill** (Recent journeys):
-  - "Reached checkout": `--sage` text on sage at 12%.
-  - "Browsing": `--text-muted` on `--panel-raised`.
+  - "Reached checkout": `glass` with `--sage` text.
+  - "Browsing": `glass` with `--text-muted` text.
 
 ## 6. Overview (bento)
 

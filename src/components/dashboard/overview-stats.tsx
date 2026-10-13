@@ -1,10 +1,11 @@
 import { connection } from "next/server";
-import { Activity, Eye, FileText, MousePointerClick, Users } from "lucide-react";
+import { Activity, FileText, MousePointerClick, MousePointer2, Users } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
-import { StatCard } from "@/components/dashboard/stat-card";
+import { StatTile } from "@/components/dashboard/stat-tile";
+import { Card } from "@/components/ui/card";
 import { getOverviewStats } from "@/server/services/stats";
 
-/** Streams behind <Suspense>: reads the DB at request time. */
+/** Streams behind <Suspense>: all-time totals as 2×2 tiles. Change pills come in Phase 3.5 Step B. */
 export async function OverviewStats() {
   await connection();
   const stats = await getOverviewStats();
@@ -14,17 +15,20 @@ export async function OverviewStats() {
       <EmptyState
         icon={Activity}
         title="No events yet"
-        description="Open the demo store and click around. Stats appear here as soon as the first event arrives."
+        description="Open the demo store and click around. Numbers appear here as soon as the first event arrives."
       />
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <StatCard label="Sessions" value={stats.sessions} icon={Users} />
-      <StatCard label="Events" value={stats.events} icon={Eye} iconClassName="text-event-pageview" />
-      <StatCard label="Clicks" value={stats.clicks} icon={MousePointerClick} iconClassName="text-event-click" />
-      <StatCard label="Pages tracked" value={stats.pages} icon={FileText} />
-    </div>
+    <Card className="lg:col-span-4">
+      <h2 className="text-lg font-medium">Totals</h2>
+      <div className="grid grid-cols-2 gap-3">
+        <StatTile label="Sessions" value={stats.sessions} icon={Users} />
+        <StatTile label="Events" value={stats.events} icon={MousePointer2} />
+        <StatTile label="Clicks" value={stats.clicks} icon={MousePointerClick} />
+        <StatTile label="Pages tracked" value={stats.pages} icon={FileText} />
+      </div>
+    </Card>
   );
 }

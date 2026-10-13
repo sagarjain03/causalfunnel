@@ -5,7 +5,10 @@ const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-const relativeFormat = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+const relativeFormats = {
+  long: new Intl.RelativeTimeFormat("en", { numeric: "auto" }),
+  narrow: new Intl.RelativeTimeFormat("en", { numeric: "auto", style: "narrow" }),
+};
 const numberFormat = new Intl.NumberFormat("en");
 
 /** First 8 chars of a session id. */
@@ -22,8 +25,9 @@ export function pathOf(url: string): string {
   }
 }
 
-/** "3 minutes ago", relative to `now` (passed in so server and client render the same text). */
-export function formatRelative(iso: string, now: number): string {
+/** "3 minutes ago" (or "3m ago" with style "narrow"), relative to `now` (passed in so server and client render the same text). */
+export function formatRelative(iso: string, now: number, style: keyof typeof relativeFormats = "long"): string {
+  const relativeFormat = relativeFormats[style];
   const diff = new Date(iso).getTime() - now;
   const abs = Math.abs(diff);
   if (abs < MINUTE) return relativeFormat.format(Math.round(diff / SECOND), "second");

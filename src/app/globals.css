@@ -1,58 +1,99 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Dark-first. See docs/DESIGN.md for the reasoning behind every token. */
+/* "Bento on dark". See docs/DESIGN.md §2 for every token. */
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.75rem;
+  /* Surfaces & text: neutral charcoal, deep black background, surfaces a step lighter */
+  --frame: #000000;
+  --app: #0a0a0a;
+  --panel: #141414;
+  --panel-raised: #1c1c1c;
+  --line: #262626;
+  --text: #f2f2f2;
+  --text-muted: #8f8f8f;
 
-  /* Surfaces */
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #111113;
-  --card-foreground: #fafafa;
-  --popover: #111113;
-  --popover-foreground: #fafafa;
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --border: #27272a;
-  --input: #27272a;
+  /* Glass controls (DESIGN.md §5): gradient body, bright top edge, dark bottom edge, soft drop shadow, faint sheen */
+  --glass-top: #262626;
+  --glass-bottom: #111111;
+  --glass-edge: rgb(255 255 255 / 0.07);
+  --glass-highlight: rgb(255 255 255 / 0.12);
+  --glass-inner-shadow: rgb(0 0 0 / 0.6);
+  --glass-drop: rgb(0 0 0 / 0.8);
+  --glass-drop-soft: rgb(0 0 0 / 0.45);
+  --glass-sheen: rgb(255 255 255 / 0.06);
 
-  /* Brand: "signal" orange = clicks, cyan = page views */
-  --primary: #ff6b35;
-  --primary-foreground: #0a0a0a;
-  --secondary: #18181b;
-  --secondary-foreground: #fafafa;
-  --accent: #22d3ee;
-  --accent-foreground: #0a0a0a;
-  --ring: #ff6b35;
-
-  /* Status */
-  --destructive: #f43f5e;
-  --success: #34d399;
-  --warning: #fbbf24;
+  /* Data & accent */
+  --sage: #9cc5c4;
+  --sage-dim: #5e7f7e;
+  --orange: #f2672e; /* only where DESIGN.md §2 "Orange budget" allows */
+  --up: #4cc38a;
+  --down: #e5484d;
 
   /* Event colors */
-  --event-click: #ff6b35;
-  --event-pageview: #22d3ee;
+  --event-click: var(--orange);
+  --event-pageview: var(--sage);
 
-  /* Heatmap ramp: cold -> hot */
-  --heat-1: #22d3ee;
-  --heat-2: #a3e635;
-  --heat-3: #fbbf24;
-  --heat-4: #ff6b35;
-  --heat-5: #f43f5e;
+  /* Heat ramp: cold -> hot */
+  --heat-0: transparent;
+  --heat-1: #5e7f7e;
+  --heat-2: #9cc5c4;
+  --heat-3: #e8d58a;
+  --heat-4: #f2672e;
+
+  /* shadcn aliases (DESIGN.md §2 "shadcn mapping") */
+  --radius: 0.75rem;
+  --background: var(--app);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel);
+  --popover-foreground: var(--text);
+  --muted: var(--panel-raised);
+  --muted-foreground: var(--text-muted);
+  --secondary: var(--panel-raised);
+  --secondary-foreground: var(--text);
+  --accent: var(--panel-raised);
+  --accent-foreground: var(--text);
+  --input: var(--panel-raised);
+  --border: var(--line);
+  --primary: var(--orange);
+  --primary-foreground: var(--app);
+  --ring: var(--sage);
+  --destructive: var(--down);
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-onest);
   --font-mono: var(--font-geist-mono);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-icon: 10px;
+  --radius-tile: 16px;
+  --radius-card: 22px;
+  --radius-frame: 28px;
+
+  --color-frame: var(--frame);
+  --color-app: var(--app);
+  --color-panel: var(--panel);
+  --color-panel-raised: var(--panel-raised);
+  --color-line: var(--line);
+  --color-sage: var(--sage);
+  --color-sage-dim: var(--sage-dim);
+  --color-orange: var(--orange);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --color-event-click: var(--event-click);
+  --color-event-pageview: var(--event-pageview);
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -62,20 +103,48 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
   --color-destructive: var(--destructive);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-event-click: var(--event-click);
-  --color-event-pageview: var(--event-pageview);
+}
+
+/* Signature texture (DESIGN.md §3): bars and progress fills only, never decoration. */
+@utility hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--sage) 35%, transparent) 0 1px,
+    transparent 1px 6px
+  );
+}
+
+/* Glossy charcoal glass for controls only (pills, buttons, chips). Never on cards or behind data. */
+@utility glass {
+  background-image:
+    linear-gradient(115deg, var(--glass-sheen) 0%, var(--glass-sheen) 30%, transparent 30.5%),
+    linear-gradient(to bottom, var(--glass-top), var(--glass-bottom));
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 var(--glass-inner-shadow),
+    0 1px 2px var(--glass-drop),
+    0 6px 16px var(--glass-drop-soft);
+}
+
+/* Same bevel, sheen and shadow over an existing background color (orange primary button, active nav pill). */
+@utility glass-shine {
+  background-image: linear-gradient(115deg, var(--glass-sheen) 0%, var(--glass-sheen) 30%, transparent 30.5%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 -1px 0 var(--glass-inner-shadow),
+    0 1px 2px var(--glass-drop),
+    0 6px 16px var(--glass-drop-soft);
 }
 
 @layer base {
@@ -83,7 +152,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-frame text-foreground font-sans;
   }
 }
 

@@ -38,7 +38,7 @@ Done when:
 
 Tasks:
 1. `public/tracker.js` — IIFE, session handling with 30-min expiry, `page_view`, `click`, SPA navigation, sendBeacon fallback, `data-endpoint`, try/catch everywhere.
-2. `public/demo/index.html`, `products.html`, `checkout.html` — simple but realistic store pages (header, product cards, buttons) with different layouts so heatmaps differ.
+2. `public/demo/index.html`, `products.html`, `checkout.html` — simple but realistic store pages (header, product cards, buttons) with different layouts so heatmaps differ. (Redesigned later as the Amazon-style "Northwind" store with a 4th page, `product.html`; see MEMORY.)
 3. Link to `/demo` from the dashboard empty states.
 
 Done when:
@@ -72,7 +72,7 @@ Done when:
 **Goal:** replace the generic first UI with the "Bento on dark" design (DESIGN.md). Every number stays real (honesty rule).
 
 Tasks:
-1. **Fonts:** download General Sans woff2 (300, 400, 500, 600) from Fontshare into `src/app/fonts/`, load it with `next/font/local`, and keep Geist Mono for session ids only.
+1. **Fonts:** Onest (300, 400, 500, 600) via `next/font/google`, and keep Geist Mono for session ids only. (General Sans was dropped: its license forbids a public repo.)
 2. **Tokens:** rewrite `globals.css` with the DESIGN.md §2 palette, the shadcn aliases, the heat ramp, and the `.hatch` utility.
 3. **Frame + top bar:** the rounded app frame, logo, floating pill navbar (Overview / Journeys / Heatmap) with the sliding active pill (motion `layoutId`), live dot, "Open demo store" button, and greeting row (client-computed time of day and date). Remove the sidebar and the mobile sheet nav.
 4. **New services** (ARCHITECTURE.md §4.1): `getWeeklyActivity`, `getStatsWithChange`, `getClickGrid`, `getLatestJourney`, `getTopPages`, and `reached_checkout` in `listSessions`. Also the `cf_tz` time-zone cookie.
@@ -80,7 +80,7 @@ Tasks:
 6. **Restyle Journeys:** move `/dashboard/sessions` → `/dashboard/journeys` (list) and `/dashboard/journeys/[sessionId]` (timeline left, page preview right). Keep the loading, empty, error and not-found states.
 
 Done when:
-- [ ] General Sans renders (no fallback font visible after load, no layout shift)
+- [ ] Onest renders (no fallback font visible after load, no layout shift)
 - [ ] `grep -rn "uppercase" src/` finds nothing outside `components/ui`; no hex in components
 - [ ] Every Overview number matches the database (cross-check against the API, `clean:test` dry run counts, or Atlas)
 - [ ] "New this week" shows when the previous 7 days are empty

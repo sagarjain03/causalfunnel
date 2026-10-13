@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Onest } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+
+// Onest instead of General Sans: General Sans' license (ITF FFL §02) forbids putting the font files in a public repo.
+const onest = Onest({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-onest",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "CausalFunnel Analytics",
@@ -10,10 +18,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`dark ${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`dark ${onest.variable} ${GeistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

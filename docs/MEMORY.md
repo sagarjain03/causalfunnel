@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** 3 code complete (its "Done when" boxes are still unticked: the user hasn't confirmed the manual checklist) → **Phase 3.5 — Redesign** next (docs written, no code yet)
+- **Phase:** 3.5 Step A complete (uncommitted), including the charcoal + glass update → Step B (Overview services + bento cards) next
 - **Working on (file):** none
-- **Next step:** Phase 3.5, task 1 — download General Sans (300/400/500/600) into `src/app/fonts/` and load it with `next/font/local`.
+- **Next step:** Phase 3.5 Step B — ARCHITECTURE §4.1 services, then the bento cards
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -26,6 +26,14 @@
   - `tsc`, `lint`, `build` pass; the 3 dashboard routes build as ◐ (static shell + streamed data). Playwright checks: stats and the table match the API; a row click opens the journey; unknown and malformed ids show not-found; at 375px there's no overflow and the sheet nav works; 0 console errors.
   - Not yet seen in a browser: "Load more" (the DB has 7 sessions, fewer than 50).
 - [2026-10-13] Redesign spec (docs only): rewrote `DESIGN.md` ("Bento on dark"), RULES §1/§3, ARCHITECTURE (§4.1 Overview services, folder tree), PHASES (new Phase 3.5; Phase 4 adds the replay scrubber; Phase 5 trimmed to the DESIGN §9 motion list). All Aceternity mentions removed.
+- [2026-10-13] Phase 3.5 Step A (uncommitted):
+  - Onest font, `globals.css` rewritten to the DESIGN §2 tokens + shadcn aliases + `.hatch` + radius tokens (`rounded-icon/tile/card/frame`).
+  - Rounded frame + top bar (logo, pill navbar with motion `layoutId`, Live/Idle dot via `getLastEventAt()`, Open demo store), greeting row.
+  - `/dashboard/sessions` → `/dashboard/journeys` (list + detail), with `reached_checkout` in `listSessions`. Journey detail: summary tiles + selectable timeline (left), page preview iframe with click dot (right).
+  - Overview: totals as 2×2 tiles.
+  - Deleted the sidebar, mobile sheet, nav-links, page-header, stat-card(s), brand, `ui/sheet.tsx`.
+  - `tsc`, `lint`, `build` pass. Playwright: Live matches the newest event; `reached_checkout` correct; the dot lands on the clicked field; 375px has no overflow anywhere (the journeys table fits without scrolling); 0 console errors on fresh loads.
+- [2026-10-13] Demo store redesign (uncommitted, user request): "Northwind", an Amazon-style marketplace with its own brand (the user asked for "exactly like Amazon"; declined because of trademark/impersonation risk on a public repo + deploy, and agreed on "Amazon-style, own brand"). 4 pages (`index`, `products`, new `product`, `checkout`) + shared `public/demo/store.css`; static, no JS except the tracker; no page-level overflow at 1280 and 375. **Images pending from the user** (free-license, Unsplash/Pexels) in `public/demo/img/`: `hero.jpg` 1500×600, `deal-1..4.jpg` 600×600, `p-1..9.jpg` 800×800 (backpack, headphones, sneakers, smartwatch, bottle, desk lamp, t-shirt, sunglasses, mug), `p-1b.jpg`, `p-1c.jpg`. Missing images show a grey tile (CSS background-image) plus a 404 in the console.
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -52,6 +60,15 @@
   - Nav label "Journeys" → routes move to `/dashboard/journeys`.
   - The live dot = an event in the last 5 min.
   - The click grid covers the last 28 days, in the viewer's time zone via a `cf_tz` cookie (UTC fallback, labelled).
+- **Charcoal + glass (2026-10-13, user request mid-Step-A, with a reference image of glossy dark pill buttons):** the background is deep black (`--frame #000`, `--app #0A0A0A`); surfaces are neutral charcoal a step lighter (`--panel #141414`, `--panel-raised #1C1C1C`, `--line #262626`). Glass (`glass` / `glass-shine` utilities, `--glass-*` tokens) is on **controls only** (nav, Live/date pills, buttons, chips, status pills), never on cards. The user chose "controls only". Sage and orange are unchanged. `ui/button.tsx`: default = `glass-shine` on orange, outline = `glass`, and `transition-all` removed.
+- - Demo store: one shared stylesheet (`/demo/store.css`) instead of one inline `<style>` per page (4 pages share the header and footer). The hero is static (no auto-carousel) and all products link to one `product.html?id=n`, whose query is stripped by `normalizePageUrl`, so it's one heatmap page. Old `/demo*` click data was recorded on the previous layouts and won't line up with the new ones.
+- Turbopack dev cache: after `globals.css` changes the dev server once kept serving the old CSS even after a restart; fixed by stopping it and deleting `.next/dev`.
+- **Font: Onest, not General Sans.** General Sans' ITF Free Font License v2.0 §02 forbids distributing the files via a "repository" or "publicly accessible servers" (a public GitHub repo). Onest loads through `next/font/google`, so `next build` now needs network access once to fetch it (Phase 0 had avoided that).
+- Page preview iframe: `sandbox="allow-scripts"` **without** `allow-same-origin` (opaque origin: the page can't touch our cookies/storage/DOM), `referrerPolicy="no-referrer"`, `pointer-events-none`, `?cf_preview=1`. For a click step it's rendered at the click's own `viewport_w × page_h`, so the dot lands on the clicked element; the card scrolls to it.
+- The Live/Idle dot lives in the layout, so it only updates on a full load or refresh (layouts persist across client navigation). No pulse until Phase 5.
+- "Open demo store" in the top bar is hidden below `sm` (it doesn't fit next to the logo and Live at 375px); empty states still show it.
+- Journeys table below `sm`: id, status, last seen only, with narrow relative time ("4m ago"), so it fits 375px without scrolling.
+- shadcn `ui/tooltip.tsx` animations removed and `ui/card.tsx` restyled (`rounded-card`, `bg-panel`, `p-5`, no shadow), because DESIGN §9 allows no other motion.
 - **Cache Components pattern for dashboard pages:** the page component is sync (heading in the static shell); the data part is an async component in `src/components/**` behind `<Suspense fallback={Skeleton}>` that calls `await connection()` **before** any DB read. This applies even on `[sessionId]`: `await params` alone doesn't stop prerendering in dev (the param value is known), and mongoose then hits `new Date()` during the prerender.
 - No `loading.tsx` files (deviation from PHASES' wording): the Suspense fallbacks are the loading state and keep the headings in the static shell.
 - `usePathname` suspends on `[sessionId]` under Cache Components, so `ActiveNavLinks` is always inside `<Suspense fallback={<NavLinks pathname={null} />}>`.
@@ -68,4 +85,5 @@
 - ~~Smoke test data stays in the DB and appears in the dashboard.~~ Resolved: run `npm run clean:test` (dry run), then `npm run clean:test -- --yes` to delete.
 - The Atlas password was once in `.env.example` (never committed; it now holds placeholders). Rotate it before deploying.
 - All manual test clicks so far were made with DevTools docked, at `viewport_w` ≈ 618px, so they fall in the mobile (<768px) bucket. An empty Desktop heatmap in Phase 4 is expected until desktop-width clicks are generated. This is not a bug.
+- Playwright mistake (2026-10-13): one test visit used `?__test_preview=1` instead of `?cf_preview=1` and recorded a page_view on `/demo` (session `414d002c-ab2f-4dab-abc3-e5906d5f2245`). Delete it only with the user's OK.
 - The build warns about a stray `D:\pnpm-lock.yaml` outside the repo (harmless; delete it or set `turbopack.root`).

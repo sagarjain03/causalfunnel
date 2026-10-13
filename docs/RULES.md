@@ -7,7 +7,7 @@ These are hard rules for anyone (human or AI) writing code in this repo. When a 
 | Need | Use | Notes |
 |---|---|---|
 | Primitives (button, table, select, card, badge, tabs, tooltip, sheet, skeleton, sonner) | **shadcn/ui** | `npx shadcn@latest add <name>`. Lives in `src/components/ui`. |
-| Fonts | **General Sans** via `next/font/local` (files in `src/app/fonts/`), **Geist Mono** for session ids only | No other fonts. |
+| Fonts | **Onest** via `next/font/google`, **Geist Mono** for session ids only | No other fonts. Do not add General Sans or other Fontshare (ITF FFL) fonts: their license forbids putting the files in a public repo. |
 | Nav pill slide | **motion** | `import { motion } from "motion/react"`. Only for the navbar `layoutId` pill. |
 | Number count-up, bar grow, heatmap replay | **anime.js v4** | `import { animate, stagger } from "animejs"` (named exports, v4 API). |
 | Icons | **lucide-react** | Nothing else. |
@@ -34,8 +34,9 @@ DESIGN.md is the spec; these are the rules that are easy to break.
 - **Honesty rule.** Every number shown must come from the database. No placeholder, decorative or example numbers, including in empty states, legends and skeletons.
 - **Hatch texture.** Bars and progress fills use the 45° diagonal hatch (`.hatch`: 1px sage lines at 35% opacity every 6px). The current/selected bar is solid sage. Never use the hatch as decoration (backgrounds, borders, empty areas).
 - **Orange only in these places:** the logo mark, the primary button, the live dot, the single highlighted bar (at most one per chart), and click events (dots, timeline nodes, the click icon). Anything else orange is a bug. shadcn variants that default to `primary` (orange) must be given a non-primary variant.
+- **Glass on controls only.** The `glass` / `glass-shine` utilities go on the nav, pills, buttons and chips; never on cards, the frame, or behind data. No `backdrop-filter`. Cards stay flat (1px border, no shadow).
 - **No all-caps.** No `uppercase` class or letter-spaced eyebrow labels. Sentence case everywhere.
-- **Mono only for session ids** (Geist Mono). Other numbers use General Sans with `tabular-nums`.
+- **Mono only for session ids** (Geist Mono). Other numbers use Onest with `tabular-nums`.
 - **Motion budget:** only the four motions in DESIGN.md §9 (count-up, bar grow, nav pill slide, heatmap replay) plus the live-dot pulse. Hover = subtle background change only. Nothing else animates.
 - Respect `prefers-reduced-motion`: JS animations check `window.matchMedia` and render the final state; CSS is disabled globally.
 - Colors come from CSS variables in `globals.css`. **No hex codes in components.**

@@ -3,88 +3,124 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Northwind Supply — Home</title>
-  <style>
-    :root { --bg: #09090b; --card: #111113; --muted: #18181b; --border: #27272a; --fg: #fafafa; --dim: #a1a1aa; --primary: #ff6b35; --accent: #22d3ee; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
-    a { color: inherit; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-    nav { position: sticky; top: 0; background: rgba(9, 9, 11, .9); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); z-index: 10; }
-    nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
-    .logo { font-weight: 700; text-decoration: none; margin-right: auto; }
-    .logo span { color: var(--primary); }
-    nav a.link { color: var(--dim); text-decoration: none; font-size: 14px; }
-    nav a.link:hover, nav a.active { color: var(--fg); }
-    .btn { display: inline-block; background: var(--primary); color: #0a0a0a; font-weight: 600; padding: 14px 28px; border-radius: 10px; text-decoration: none; border: 0; cursor: pointer; font-size: 16px; }
-    .btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--border); }
-    .hero { min-height: 80vh; display: flex; align-items: center; text-align: center; border-bottom: 1px solid var(--border); }
-    .hero h1 { font-size: clamp(36px, 7vw, 72px); line-height: 1.05; margin: 0 0 20px; letter-spacing: -0.03em; }
-    .hero h1 em { font-style: normal; color: var(--accent); }
-    .hero p { color: var(--dim); font-size: 18px; max-width: 560px; margin: 0 auto 32px; }
-    .hero .ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    section { padding: 96px 0; border-bottom: 1px solid var(--border); }
-    h2 { font-size: 32px; margin: 0 0 32px; letter-spacing: -0.02em; }
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-    .card h3 { margin: 0 0 8px; }
-    .card p { margin: 0; color: var(--dim); }
-    .quote { font-size: 22px; max-width: 720px; }
-    .quote cite { display: block; margin-top: 12px; color: var(--dim); font-size: 15px; font-style: normal; }
-    .banner { text-align: center; }
-    .banner p { color: var(--dim); margin: 0 0 24px; }
-    footer { padding: 48px 0 96px; color: var(--dim); font-size: 14px; }
-  </style>
+  <title>Northwind — Shop deals on everyday essentials</title>
+  <link rel="stylesheet" href="/demo/store.css">
 </head>
 <body>
-  <nav>
-    <div class="wrap">
-      <a class="logo" href="/demo">North<span>wind</span></a>
-      <a class="link active" href="/demo">Home</a>
-      <a class="link" href="/demo/products.html">Products</a>
-      <a class="link" href="/demo/checkout.html">Checkout</a>
-    </div>
+  <header class="top">
+    <a class="logo" href="/demo">northwind<span class="dot" aria-hidden="true"></span><small>.in</small></a>
+    <a class="hit deliver" href="/demo/checkout.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <span><small>Deliver to Noida 201301</small><b>Update location</b></span>
+    </a>
+    <form class="search" action="/demo/products.html" role="search">
+      <label class="sr-only" for="cat">Category</label>
+      <select id="cat" name="cat"><option>All</option><option>Electronics</option><option>Fashion</option><option>Home</option></select>
+      <label class="sr-only" for="q">Search Northwind</label>
+      <input id="q" name="q" placeholder="Search Northwind.in">
+      <button type="submit" aria-label="Search">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+    </form>
+    <a class="hit hide-md" href="/demo/checkout.html"><small>Hello, sign in</small><b>Account &amp; Lists</b></a>
+    <a class="hit hide-md" href="/demo/checkout.html"><small>Returns</small><b>&amp; Orders</b></a>
+    <a class="hit cart" href="/demo/checkout.html">
+      <span class="count">
+        <svg width="34" height="28" viewBox="0 0 34 28" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 3h5l4 16h17l4-11H9"/><circle cx="12" cy="24" r="2"/><circle cx="25" cy="24" r="2"/></svg>
+        <span>2</span>
+      </span>
+      Cart
+    </a>
+  </header>
+  <nav class="subnav" aria-label="Categories">
+    <a class="all" href="/demo/products.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>All</a>
+    <a href="/demo/products.html">Fresh</a>
+    <a href="/demo/products.html">Today's Deals</a>
+    <a href="/demo/products.html">Mobiles</a>
+    <a href="/demo/products.html">Electronics</a>
+    <a href="/demo/products.html">Fashion</a>
+    <a href="/demo/products.html">Home &amp; Kitchen</a>
+    <a href="/demo/products.html">Sports &amp; Outdoors</a>
+    <a href="/demo/products.html">Bestsellers</a>
+    <a href="/demo/products.html">New Releases</a>
+    <a href="/demo/checkout.html">Customer Service</a>
   </nav>
 
-  <header class="hero">
-    <div class="wrap">
-      <h1>Gear that <em>outlasts</em> the trail.</h1>
-      <p>Packs, shells and camp kit built from recycled materials. Free shipping over $75 and a lifetime repair promise.</p>
-      <div class="ctas">
-        <a class="btn" href="/demo/products.html">Shop now</a>
-        <a class="btn ghost" href="#story">Our story</a>
+  <main>
+    <section class="hero" aria-label="Festive sale">
+      <div class="img" style="--img: url('/demo/img/hero.jpg')" role="img" aria-label="Festive sale banner"></div>
+      <div class="copy">
+        <h1>The Festive Edit is live</h1>
+        <p>Up to 60% off on gear, home and tech. Free delivery on your first order.</p>
+        <a class="btn alt" href="/demo/products.html">Shop the sale</a>
       </div>
-    </div>
-  </header>
+    </section>
 
-  <section>
     <div class="wrap">
-      <h2>Why Northwind</h2>
-      <div class="features">
-        <div class="card"><h3>Lifetime repairs</h3><p>Rip it, send it back, we fix it. Forever, for free.</p></div>
-        <div class="card"><h3>Recycled fabrics</h3><p>Every shell uses at least 80% recycled nylon.</p></div>
-        <div class="card"><h3>Ships in 24h</h3><p>Orders before 3pm leave our warehouse the same day.</p></div>
+      <div class="deals">
+        <section class="card">
+          <h2>Trending deals</h2>
+          <div class="quad">
+            <a href="/demo/product.html?id=2"><div class="img" style="--img: url('/demo/img/p-2.jpg')" role="img" aria-label="Headphones"></div>Headphones</a>
+            <a href="/demo/product.html?id=4"><div class="img" style="--img: url('/demo/img/p-4.jpg')" role="img" aria-label="Smartwatch"></div>Smartwatches</a>
+            <a href="/demo/product.html?id=3"><div class="img" style="--img: url('/demo/img/p-3.jpg')" role="img" aria-label="Sneakers"></div>Sneakers</a>
+            <a href="/demo/product.html?id=1"><div class="img" style="--img: url('/demo/img/p-1.jpg')" role="img" aria-label="Backpack"></div>Backpacks</a>
+          </div>
+          <a class="see-all" href="/demo/products.html">See all deals</a>
+        </section>
+        <section class="card">
+          <h2>Under ₹299</h2>
+          <div class="quad">
+            <a href="/demo/product.html?id=9"><div class="img" style="--img: url('/demo/img/p-9.jpg')" role="img" aria-label="Coffee mug"></div>Mugs</a>
+            <a href="/demo/product.html?id=5"><div class="img" style="--img: url('/demo/img/p-5.jpg')" role="img" aria-label="Water bottle"></div>Bottles</a>
+            <a href="/demo/product.html?id=8"><div class="img" style="--img: url('/demo/img/p-8.jpg')" role="img" aria-label="Sunglasses"></div>Sunglasses</a>
+            <a href="/demo/product.html?id=7"><div class="img" style="--img: url('/demo/img/p-7.jpg')" role="img" aria-label="T-shirt"></div>T-shirts</a>
+          </div>
+          <a class="see-all" href="/demo/products.html">Shop under ₹299</a>
+        </section>
+        <section class="card">
+          <h2>Up to 60% off | Self-care &amp; home</h2>
+          <div class="quad">
+            <a href="/demo/products.html"><div class="img" style="--img: url('/demo/img/deal-1.jpg')" role="img" aria-label="Skincare"></div>Skincare</a>
+            <a href="/demo/products.html"><div class="img" style="--img: url('/demo/img/deal-2.jpg')" role="img" aria-label="Kitchen"></div>Kitchen</a>
+            <a href="/demo/products.html"><div class="img" style="--img: url('/demo/img/deal-3.jpg')" role="img" aria-label="Audio"></div>Audio</a>
+            <a href="/demo/products.html"><div class="img" style="--img: url('/demo/img/deal-4.jpg')" role="img" aria-label="Home decor"></div>Home decor</a>
+          </div>
+          <a class="see-all" href="/demo/products.html">See more</a>
+        </section>
+        <section class="card">
+          <h2>Sign in for your best experience</h2>
+          <a class="btn alt block" href="/demo/checkout.html">Sign in securely</a>
+          <p class="muted" style="margin: 16px 0 10px">Work from home, the easy way</p>
+          <a href="/demo/product.html?id=6"><div class="img" style="--img: url('/demo/img/p-6.jpg'); aspect-ratio: 4 / 3" role="img" aria-label="Desk lamp"></div></a>
+          <a class="see-all" href="/demo/products.html">Explore home office</a>
+        </section>
       </div>
-    </div>
-  </section>
 
-  <section id="story">
-    <div class="wrap">
-      <h2>What hikers say</h2>
-      <blockquote class="quote">“My Ridge 30 pack has done 2,000 miles and two repairs. Still my favourite piece of kit.”<cite>— Priya, Pacific Crest Trail</cite></blockquote>
+      <section class="card strip" aria-labelledby="best">
+        <h2 id="best">Best sellers in Sports &amp; Outdoors</h2>
+        <div class="row">
+          <a href="/demo/product.html?id=1"><div class="img contain" style="--img: url('/demo/img/p-1.jpg')" role="img" aria-label="Trail backpack"></div><div class="price"><sup>₹</sup>1,799</div></a>
+          <a href="/demo/product.html?id=3"><div class="img contain" style="--img: url('/demo/img/p-3.jpg')" role="img" aria-label="Running sneakers"></div><div class="price"><sup>₹</sup>2,499</div></a>
+          <a href="/demo/product.html?id=5"><div class="img contain" style="--img: url('/demo/img/p-5.jpg')" role="img" aria-label="Steel bottle"></div><div class="price"><sup>₹</sup>449</div></a>
+          <a href="/demo/product.html?id=8"><div class="img contain" style="--img: url('/demo/img/p-8.jpg')" role="img" aria-label="Sunglasses"></div><div class="price"><sup>₹</sup>899</div></a>
+          <a href="/demo/product.html?id=4"><div class="img contain" style="--img: url('/demo/img/p-4.jpg')" role="img" aria-label="Smartwatch"></div><div class="price"><sup>₹</sup>3,299</div></a>
+          <a href="/demo/product.html?id=2"><div class="img contain" style="--img: url('/demo/img/p-2.jpg')" role="img" aria-label="Headphones"></div><div class="price"><sup>₹</sup>2,199</div></a>
+          <a href="/demo/product.html?id=7"><div class="img contain" style="--img: url('/demo/img/p-7.jpg')" role="img" aria-label="T-shirt"></div><div class="price"><sup>₹</sup>299</div></a>
+        </div>
+      </section>
     </div>
-  </section>
+  </main>
 
-  <section class="banner">
-    <div class="wrap">
-      <h2>Ready for the next trip?</h2>
-      <p>Join 40,000 hikers getting one email a month. No spam.</p>
-      <button class="btn" type="button">Subscribe</button>
+  <a class="to-top" href="#">Back to top</a>
+  <footer class="foot">
+    <div class="cols">
+      <div><h4>Get to know us</h4><a href="/demo">About Northwind</a><a href="/demo">Careers</a><a href="/demo">Press releases</a></div>
+      <div><h4>Connect with us</h4><a href="/demo">Instagram</a><a href="/demo">X</a><a href="/demo">YouTube</a></div>
+      <div><h4>Make money with us</h4><a href="/demo">Sell on Northwind</a><a href="/demo">Affiliate program</a><a href="/demo">Advertise</a></div>
+      <div><h4>Let us help you</h4><a href="/demo/checkout.html">Your account</a><a href="/demo/checkout.html">Returns centre</a><a href="/demo/checkout.html">Help</a></div>
     </div>
-  </section>
-
-  <footer>
-    <div class="wrap">© Northwind Supply — a demo store for CausalFunnel analytics.</div>
+    <div class="base">© Northwind — a demo store for CausalFunnel analytics. Not a real shop.</div>
   </footer>
 
   <script src="/tracker.js" data-debug defer></script>
