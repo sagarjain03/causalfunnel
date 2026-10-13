@@ -42,10 +42,10 @@ Tasks:
 3. Link to `/demo` from the dashboard empty states.
 
 Done when:
-- [ ] Opening `/demo` and clicking creates documents with correct fields
-- [ ] Reload keeps the same `session_id`; clearing localStorage creates a new one
-- [ ] Network tab shows events still sent when navigating away (beacon)
-- [ ] Forcing an API error does not log errors on the demo page
+- [x] Opening `/demo` and clicking creates documents with correct fields
+- [x] Reload keeps the same `session_id`; clearing localStorage creates a new one
+- [x] Network tab shows events still sent when navigating away (beacon)
+- [x] Forcing an API error does not log errors on the demo page
 
 ---
 

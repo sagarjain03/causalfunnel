@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northwind Supply — Products</title>
+  <style>
+    :root { --bg: #09090b; --card: #111113; --muted: #18181b; --border: #27272a; --fg: #fafafa; --dim: #a1a1aa; --primary: #ff6b35; --accent: #22d3ee; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: inherit; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+    nav { position: sticky; top: 0; background: rgba(9, 9, 11, .9); border-bottom: 1px solid var(--border); backdrop-filter: blur(8px); z-index: 10; }
+    nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+    .logo { font-weight: 700; text-decoration: none; margin-right: auto; }
+    .logo span { color: var(--primary); }
+    nav a.link { color: var(--dim); text-decoration: none; font-size: 14px; }
+    nav a.link:hover, nav a.active { color: var(--fg); }
+    .head { padding: 48px 0 24px; }
+    .head h1 { margin: 0 0 4px; font-size: 36px; letter-spacing: -0.02em; }
+    .head p { margin: 0; color: var(--dim); }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+    .chip { background: var(--muted); color: var(--dim); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+    .chip.on { color: var(--fg); border-color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; padding-bottom: 96px; }
+    .product { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .thumb { height: 220px; background: linear-gradient(135deg, var(--muted), var(--border)); display: grid; place-items: center; color: var(--dim); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+    .info { padding: 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .info h3 { margin: 0; font-size: 17px; }
+    .info p { margin: 0; color: var(--dim); font-size: 14px; flex: 1; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+    .price { font-weight: 700; font-variant-numeric: tabular-nums; }
+    .add { background: var(--primary); color: #0a0a0a; font-weight: 600; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+    footer { padding: 48px 0 96px; border-top: 1px solid var(--border); color: var(--dim); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap">
+      <a class="logo" href="/demo">North<span>wind</span></a>
+      <a class="link" href="/demo">Home</a>
+      <a class="link active" href="/demo/products.html">Products</a>
+      <a class="link" href="/demo/checkout.html">Checkout</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <div class="head">
+      <h1>All products</h1>
+      <p>9 items · free shipping over $75</p>
+    </div>
+
+    <div class="filters">
+      <button class="chip on" type="button">All</button>
+      <button class="chip" type="button">Packs</button>
+      <button class="chip" type="button">Shells</button>
+      <button class="chip" type="button">Camp</button>
+    </div>
+
+    <div class="grid">
+      <article class="product"><div class="thumb">Pack</div><div class="info"><h3>Ridge 30 Daypack</h3><p>30L, rain cover, hip belt pockets.</p><div class="row"><span class="price">$129</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Shell</div><div class="info"><h3>Squall Rain Shell</h3><p>3-layer waterproof, pit zips, 310g.</p><div class="row"><span class="price">$219</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Camp</div><div class="info"><h3>Ember Stove Kit</h3><p>Stove, pot and windscreen in one.</p><div class="row"><span class="price">$89</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Pack</div><div class="info"><h3>Summit 55 Pack</h3><p>Multi-day pack with adjustable torso.</p><div class="row"><span class="price">$249</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Shell</div><div class="info"><h3>Drift Wind Jacket</h3><p>Packs into its own chest pocket.</p><div class="row"><span class="price">$99</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Camp</div><div class="info"><h3>Lumen Headlamp</h3><p>400 lumens, USB-C rechargeable.</p><div class="row"><span class="price">$45</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Camp</div><div class="info"><h3>Hollow Sleeping Pad</h3><p>R-value 4.2, 480g, quiet fabric.</p><div class="row"><span class="price">$139</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Pack</div><div class="info"><h3>Crest Hip Pack</h3><p>3L, for short runs and town days.</p><div class="row"><span class="price">$49</span><button class="add" type="button">Add to cart</button></div></div></article>
+      <article class="product"><div class="thumb">Shell</div><div class="info"><h3>Ridge Insulated Vest</h3><p>Recycled synthetic fill, warm when wet.</p><div class="row"><span class="price">$119</span><button class="add" type="button">Add to cart</button></div></div></article>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">© Northwind Supply — a demo store for CausalFunnel analytics.</div>
+  </footer>
+
+  <script src="/tracker.js" data-debug defer></script>
+</body>
+</html>
