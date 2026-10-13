@@ -41,11 +41,24 @@ export type ClickPoint = {
   y: number;
   viewport_w: number;
   page_h: number;
+  /** Layout width (viewport minus scrollbar); missing on clicks recorded before it existed. */
+  layout_w?: number;
+  timestamp: string;
 };
 
 export type HeatmapData = {
   page_url: string;
   clicks: ClickPoint[];
+};
+
+/** One exact viewport width a page was clicked at (heatmap width chips). */
+export type ClickWidth = {
+  viewport_w: number;
+  clicks: number;
+  /** Layout width to render the preview at (most common non-empty layout_w of the group, else viewport_w). */
+  render_w: number;
+  /** Tallest page_h among the group's clicks. */
+  page_h: number;
 };
 
 export type PageSummary = {

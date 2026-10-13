@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** 3.5 Step A + demo store + header/path/glow/hero/photo changes complete (uncommitted). DB holds only the user's own fresh session `d8cf13ed…` (25 events, on the new demo layout).
+- **Phase:** Phase 4 heatmap built (uncommitted), done before Phase 3.5 Step B at the user's request. **Waiting on the user** to click `/demo/products.html` (incl. the first "Add to cart") with the NEW tracker (hard-refresh first so `layout_w` is sent); then take the products heatmap screenshots + close-up.
 - **Working on (file):** none
-- **Next step:** Phase 3.5 Step B (ARCHITECTURE §4.1 services, then the bento cards in DESIGN.md §6 "Planned").
+- **Next step:** heatmap screenshots once the user says done → then Phase 3.5 Step B (ARCHITECTURE §4.1 services, bento cards).
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -50,6 +50,11 @@
   - Demo hero: `.hero::before` overlay (`--ink` 62% → 50% → 0), above the bottom fade, stopping where the deal cards start. Worst-case white text contrast is 5.0–6.0:1 at 375 and 1280.
   - Replaced `p-2` (headphones on black → on white, Jukka Aalho, 6pV3qV4HRVw) and `p-1c` (backpack on a street → on a white wall, Sarah Noltner, 7TJO_T1SP_E); CREDITS.md updated.
   - Verified at 375 / 820 / 1280: the journeys table never scrolls (292/292 at 375). Screenshots used 4 temporary `/__test/demo/…` journeys (removed with `clean:test`, 30 events).
+- [2026-10-13] Phase 4 heatmap `/dashboard/heatmap` (uncommitted):
+  - Services: `listHeatmapPages()` (no `/__test/`, most clicked first), `getClickWidths(page)` (aggregation by exact `viewport_w` → clicks, tallest `page_h`, `render_w` = most common `layout_w` else `viewport_w`), `getHeatmap(page, viewport_w?)` (now with `timestamp`, `layout_w`). `/api/heatmap` gained `timestamp`/`layout_w` per click; `/api/pages` unchanged.
+  - UI: `PageTitle` "Heatmap" + "{n} clicks on {label} at {w}px."; glass toolbar (page `Select` → `?page=`, exact-width chips → `?w=`, Dots/Grid); `ScaledPageFrame` (extracted from the journey preview, which keeps `allow-scripts`) with `sandbox="allow-same-origin"`; dots (10px, 55%, screen blend), grid (24 page-px cells, heat-1..4 by count/max, 70%), legend with real min/max, replay bar (anime.js, 2s, reduced motion → jump). Skeleton/empty/error. Nav item enabled. `ui/select.tsx` animations removed.
+  - Tracker sends `layout_w` (`document.documentElement.clientWidth`); zod + model accept it (optional). `pageLabel` Home rule reverted to exactly `/demo` (and `/demo/`).
+  - Verified (Playwright, existing 1536px checkout clicks): 11 of 13 dots sit on interactive elements in the rendered page (inputs, select, "Use this address", "Place your order" ×5, "Pay later"), the other 2 just beside them; grid, replay (pause mid-way → 9/13 dots), select → `?page=`, bad `?w` fallback, reduced-motion Play → jump, 375px without overflow.
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -81,6 +86,10 @@
 - Turbopack dev cache: after `globals.css` changes the dev server once kept serving the old CSS even after a restart; fixed by stopping it and deleting `.next/dev`.
 - **/demo cleanup (task 5, 2026-10-13):** already done earlier (92 events deleted). New `/demo` events from the user's own browser (session `d8cf13ed…`, 1536px viewport, 17:10–17:11 UTC) were NOT deleted, because they are fresh data on the new layout.
 - Turbopack dev cache served stale `globals.css` again after the glass/glow edits; fixed by stopping dev, deleting `.next/dev`, and restarting. If CSS changes don't appear in dev, do the same.
+- **README trade-off: heatmap per exact screen width.** A responsive page lays out differently at every window width, so a click's x/y only matches the layout at the width it was recorded at. The heatmap therefore groups clicks by exact `viewport_w` (chips like "1536px · 42"), shows one width at a time, and renders the page at that width (more precisely, at the recorded layout width `layout_w` = viewport minus scrollbar). Cost: a page visited at many different widths splits into many small heatmaps; there's no merged "all widths" view. Clicks recorded before `layout_w` existed can be off by up to the scrollbar width (~15px, ~7px for centred content). The viewer's system fonts may wrap text differently from the visitor's.
+- **README trade-off: tracker caching.** Customer sites embed a stable `/tracker.js` URL, so it's served with `Cache-Control: public, max-age=300`: a tracker update reaches every visitor within 5 minutes, at the cost of browsers re-checking it at most every 5 minutes instead of caching it for days. Our own demo pages also use `/tracker.js?v=N` (bumped on every tracker change, now `v=2`) so they pick up changes immediately. Clicks recorded before a visitor gets the new tracker lack new fields (e.g. `layout_w`).
+- Heatmap preview uses `sandbox="allow-same-origin"` without scripts (user's choice): Chrome logs "Blocked script execution" for the demo page's `tracker.js` on the heatmap page. Harmless, expected.
+- Replay duration is 2s for the full span (DESIGN previously said ≤ 800ms; too fast to follow).
 - **Docs = code (2026-10-13, user request):** DESIGN.md/RULES.md now describe the UI exactly as built. Don't change colors, layout, spacing, fonts, copy or styling unless asked; if code and docs differ, fix the docs or ask. Existing shadcn/sonner motion (skeleton pulse, table-row colour fade, toasts) is documented and kept as-is.
 - **Font: Onest, not General Sans.** General Sans' ITF Free Font License v2.0 §02 forbids distributing the files via a "repository" or "publicly accessible servers" (a public GitHub repo). Onest loads through `next/font/google`, so `next build` now needs network access once to fetch it (Phase 0 had avoided that).
 - Page preview iframe: `sandbox="allow-scripts"` **without** `allow-same-origin` (opaque origin: the page can't touch our cookies/storage/DOM), `referrerPolicy="no-referrer"`, `pointer-events-none`, `?cf_preview=1`. For a click step it's rendered at the click's own `viewport_w × page_h`, so the dot lands on the clicked element; the card scrolls to it.

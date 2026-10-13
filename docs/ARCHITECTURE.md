@@ -55,6 +55,7 @@ One collection: `events`.
   viewport_w?: number,         // window.innerWidth
   viewport_h?: number,         // window.innerHeight
   page_h?: number,             // document.documentElement.scrollHeight
+  layout_w?: number,           // document.documentElement.clientWidth: viewport minus scrollbar (added in Phase 4; older clicks lack it)
   // optional context:
   referrer?: string,
   user_agent?: string
@@ -118,12 +119,32 @@ The heatmap preview's dots reuse `getHeatmap(topPage.page_url)`, filtered to `vi
 - The UI labels the grid and the activity chart "UTC" while the fallback is in use.
 - Rolling 7-day windows (`getStatsWithChange`) need no time zone.
 
-## 5. Heatmap rendering
+## 5. Heatmap rendering (Built, Phase 4)
 
-- Dots are positioned as **percentages**: `left = x / viewport_w * 100%`, `top = y` in px scaled by `containerWidth / viewport_w`.
-- Behind the dots, an `<iframe>` of the page (demo pages are same-origin) at a fixed 1280px width, scaled down with CSS `transform: scale()`. Dots overlay the same scaled box.
-- Two modes: **Dots** (each click) and **Grid** (bucket into 20×N cells, colored by `--heat-1…5`).
-- Clicks from viewports < 768px vs ≥ 768px can be filtered, because layouts differ.
+**One exact width at a time.** A responsive page lays out differently at every window width (1280px vs 1536px, not just desktop vs mobile), so a click's `(x, y)` (`pageX`/`pageY`) only lands on the right element when the page is rendered at the width it was recorded at. Mixing widths, or bucketing them, puts dots on the wrong elements.
+
+**Data** (`src/server/services/heatmap.ts`):
+- `getClickWidths(page)` groups a page's clicks by exact `viewport_w`.
+- For each width it returns the click count, `page_h` (the tallest) and `render_w`: the most common `layout_w` in the group, else `viewport_w`.
+- `getHeatmap(page, viewport_w)` returns only that width's clicks, oldest first, with timestamps.
+
+**Rendering** (`ScaledPageFrame`, shared with the journey preview):
+- An `<iframe>` of `page_url?cf_preview=1` at exactly `render_w × page_h` CSS pixels, so the page lays out as the visitor saw it and needs no inner scrollbar.
+- It's scaled to the card width with `transform: scale(containerWidth / render_w)`.
+- Dots and grid are drawn in the same box at `(x, y) × scale`.
+
+**Why `layout_w`:**
+- `viewport_w` is `innerWidth`, which **includes** the visitor's vertical scrollbar (about 15px on Windows). The page actually laid out at `clientWidth`.
+- The tracker sends `layout_w = document.documentElement.clientWidth` from Phase 4 on. Clicks recorded before that fall back to `viewport_w`, and can be off by up to the scrollbar width (about 7px for centred content).
+
+**Modes:**
+- **Dots:** every click.
+- **Grid:** 24×24 page-pixel cells colored by count / maxCount through `--heat-1…4`.
+- **Replay:** filters both modes by time (anime.js).
+
+**Remaining limits** (README trade-offs):
+- The viewer's system fonts can wrap text differently from the visitor's.
+- Dynamic content that differs between visit and preview isn't reproduced.
 
 ## 6. Folder structure
 

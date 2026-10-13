@@ -62,10 +62,10 @@ const PAGE_LABELS: Record<string, string> = {
   "checkout.html": "Checkout",
 };
 
-/** Friendly page name for journey paths: …/demo → Home, …/products.html → Products, else the last segment without .html. */
+/** Friendly page name: /demo or /demo/ → Home, …/products.html → Products, else the last segment without .html. */
 export function pageLabel(url: string): string {
   const path = pathOf(url).replace(/\/+$/, "");
-  if (path === "/demo" || path.endsWith("/demo")) return "Home";
+  if (path === "/demo") return "Home"; // exactly /demo (and /demo/ after the trim); test URLs must not shape labels
   const last = path.split("/").pop() ?? "";
   return PAGE_LABELS[last] ?? (last.replace(/\.html$/, "") || "/");
 }

@@ -61,6 +61,7 @@
     evt.x = r(e.pageX);
     evt.y = r(e.pageY);
     evt.viewport_w = r(w.innerWidth);
+    evt.layout_w = r(d.documentElement.clientWidth); // innerWidth minus the scrollbar: the width the page laid out at
     evt.viewport_h = r(w.innerHeight);
     evt.page_h = Math.max(1, r(d.documentElement.scrollHeight));
     send(evt);

@@ -55,7 +55,7 @@ Neutral charcoal (no blue tint). The background is deep black; every surface is 
 
 Clicks are the one data category drawn in orange, because a click is the event the product is about. This is the only exception to the orange budget, and it never applies to bars.
 
-### Heat ramp (tokens Built, used by Planned heatmap/grid), cold → hot
+### Heat ramp (Built: heatmap Grid mode and legend), cold → hot
 `--heat-0 transparent` → `--heat-1 #5E7F7E` → `--heat-2 #9CC5C4` → `--heat-3 #E8D58A` → `--heat-4 #F2672E`
 
 A cell's color is picked by `count / maxCount`. Zero is transparent, so only the cell's `--line` outline shows.
@@ -169,7 +169,7 @@ A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is 
 - **Pill navbar** (centered): a `glass` pill, 4px padding, with Overview / Journeys / Heatmap (14px, 6×16px item padding).
   - **Active item:** a `bg-panel-raised` + `glass-shine` pill behind it that **slides** between items (motion `layoutId="nav-pill"`, spring 0.25s, bounce 0.15). Text is `--text`.
   - **Others:** `--text-muted`, turning `--text` on hover.
-  - **Heatmap:** disabled (`aria-disabled`, focusable, 60% muted, not-allowed cursor), with a "Soon" tooltip until Phase 4.
+  - **Heatmap:** a normal link to `/dashboard/heatmap` (enabled in Phase 4).
   - **Below `md`:** full width, items split it equally.
   - **Server fallback** (inside `<Suspense>`, because `usePathname` suspends on `[sessionId]`): the same bar with no active pill.
 - **Status** (right side):
@@ -183,7 +183,7 @@ There's no greeting and no date pill. Each page starts with `PageTitle` (`compon
   - `n` and `m` come from `getOverviewStats()`; the last activity from `getLastEventAt()`.
   - It says "No activity yet." when there are no events.
 - **Journeys:** `{n} journeys, {k} reached checkout.`, from `getJourneyStats()`.
-- **Heatmap** (Planned, Phase 4): the title "Heatmap" plus a sentence of real click data, wording decided in Phase 4.
+- **Heatmap:** `{n} clicks on {page label} at {width}px.`, for the selected page and exact width (§7).
 - **Journey detail:** no page title; it keeps its "← All journeys" link and the summary card.
 - Singular and plural come from `plural()` ("1 journey", "2 journeys").
 
@@ -203,7 +203,7 @@ Glossy charcoal glass (from the user's reference) is used on **controls only**:
 - the Live/Idle pill
 - buttons
 - the "Pages visited" chips, the Journeys **Path** chips and the status pills
-- Planned: the Phase 4 heatmap toolbar
+- the heatmap toolbar: page select trigger, width chips, Dots/Grid control
 
 **Never on cards, the frame, or anything behind data.**
 
@@ -285,7 +285,7 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
     - Hovering shows the full URL sequence.
     - **Hidden below `md`.**
     - Comes from `SessionSummary.path`: the `page_url` of each page_view in time order, with consecutive duplicates collapsed in the service.
-    - Labels come from `pageLabel()`: a path ending in `/demo` → Home, `products.html` → Products, `product.html` → Product, `checkout.html` → Checkout, anything else → its last segment without `.html`.
+    - Labels come from `pageLabel()`: exactly `/demo` or `/demo/` → Home, `products.html` → Products, `product.html` → Product, `checkout.html` → Checkout, anything else → its last segment without `.html`.
     - There's no "Pages" count column any more.
   - **Status:** the glass status pill.
   - **Last seen:** right-aligned, muted. From `sm` up it's the long form ("4 minutes ago"); below `sm` it's the narrow form ("4m ago"). Hover shows the ISO time.
@@ -319,11 +319,36 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
   - **iframe:** `sandbox="allow-scripts"` (no `allow-same-origin`), `referrerPolicy="no-referrer"`, `pointer-events-none`, lazy-loaded.
 - **Not found** (unknown or malformed id): a card with "Journey not found", a sentence, an outline "Back to journeys" and an orange "Open demo store".
 
-### Heatmap `/dashboard/heatmap` (Planned, Phase 4)
-- A large preview card with the scaled iframe and a dots or grid overlay.
-- A floating **glass** pill toolbar on top: page select, Dots / Grid, Desktop / Mobile.
-- A **replay scrubber** at the bottom: play/pause, a range slider over the click time span, and the current time.
-- A legend with the ramp and real counts.
+### Heatmap `/dashboard/heatmap` (Built, Phase 4)
+- **Header:** `PageTitle` "Heatmap" + `{n} clicks on {page label} at {width}px.`, where n = all clicks for the selected page **and** exact width (not affected by the replay slider). With nothing clicked yet: "No clicks recorded yet."
+- **Floating glass toolbar** (`glass`, `rounded-card`, a full pill from `md`, 6px padding, wraps on phones):
+  - **Page select:** shadcn `Select` with a glass pill trigger (36px, min 176px). Options are page labels, with path + click count as a tooltip, from `listHeatmapPages()` (no `/__test/` URLs, most clicked first). Writes `?page=<full page_url>` and drops `?w=`.
+  - **Width chips:** one per **exact window width** the page was clicked at, e.g. `1536px · 13` (36px pills, `tabular-nums`), writing `?w=`.
+    - **Selected chip:** `bg-panel-raised` + `glass-shine` (the active-nav style). **Others:** `glass`, muted.
+    - The row scrolls sideways inside the toolbar when it doesn't fit.
+    - **This replaces the old Desktop/Mobile filter.** A responsive page lays out differently at 1280px and 1536px, so x/y only match the layout at the width they were recorded at. Only clicks from the selected width are plotted.
+  - **Dots / Grid:** a glass segmented control; the selected segment uses the active-nav style. It's client state, not in the URL.
+  - **Defaults:** the most-clicked page, then its most-clicked width. An unknown `?w` falls back to the default; an unknown `?page` shows the empty state, with the toolbar still visible.
+- **Preview card:**
+  - **Header:** page path (18px/500) + the render size `W×H` (12px muted).
+  - **Body:** `ScaledPageFrame` (shared with the journey preview), an iframe of `page_url?cf_preview=1` with `sandbox="allow-same-origin"` (no scripts).
+    - **Width:** rendered at the width's `render_w`, i.e. the clicks' **layout width** (`layout_w` = viewport minus scrollbar), falling back to `viewport_w` for older clicks.
+    - **Height:** the tallest `page_h` among those clicks.
+    - **Scaling:** scaled to the card with `transform: scale()`, in a scroll box (max 70vh). Dots and grid share the scaled box: page (x, y) → (x, y) × scale.
+  - **Dots:** 10px `--event-click` dots at 55% opacity with `mix-blend-mode: screen`, so overlaps get brighter.
+  - **Grid:** 24×24 **page-pixel** cells (scaled with the page). Each cell gets `heat-1…4` by count / maxCount (≤25%, ≤50%, ≤75%, above), at 70% opacity; empty cells are transparent.
+  - **Legend** (12px muted):
+    - **Grid:** real min cell count, the heat ramp bar, real max, then "clicks per 24px cell".
+    - **Dots:** "1 dot = 1 click · n clicks shown".
+  - **Replay bar:** an outline glass play/pause icon button, then a range slider (`accent-sage`) over the time span of the selected width's clicks, then the current local date and time.
+    - Only clicks at or before the slider time are drawn. It starts at the end, showing all.
+    - Play animates the slider with anime.js (`animate()`, linear, 2s for the full span); Play at the end restarts from the first click.
+    - With reduced motion, Play jumps to the end and the slider still works. With a single click time, both controls are disabled.
+- **States:**
+  - **Loading:** a skeleton of the toolbar pill and the preview card.
+  - **Empty:** "No clicks on this page yet" + Open demo store; the toolbar stays if there are other pages.
+  - **Error:** `error.tsx` with "Try again".
+- **Console:** with no scripts allowed, Chrome logs "Blocked script execution" for the demo page's `tracker.js` on this page. That's expected and harmless.
 
 ## 8. States (Built)
 
@@ -340,15 +365,15 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
 | Skeleton pulse | `ui/skeleton.tsx` (shadcn default) | `animate-pulse` while loading |
 | Table row hover | `ui/table.tsx` (shadcn default) | `transition-colors` on the row background |
 | Toasts | sonner (library default) | slide-in; the loading icon spins |
+| Heatmap replay | `replay-bar.tsx` (anime.js `animate()`) | the slider value animates linearly to the end, 2s for the full span; dots appear in timestamp order as it passes them; reduced motion → jump to the end |
 
-All other hover changes are instant: the transitions were removed from buttons, the tooltip, the nav items and the timeline.
+All other hover changes are instant: the transitions were removed from buttons, the tooltip, the nav items, the timeline and the Select (`ui/select.tsx`: no open/close animation, no trigger transition).
 
 ### Planned
 | What | Library | Spec |
 |---|---|---|
 | Big numbers count up | anime.js | once on first load, 600ms, `outExpo` |
 | Bars grow from 0 | anime.js | once, 40ms stagger, ≤ 600ms each |
-| Heatmap dots on replay | anime.js | in timestamp order, ≤ 800ms total (or following the scrubber) |
 | Live dot pulse | CSS | slow, only while "Live" |
 
 - No page transitions, no hover lift or scale, no row stagger.

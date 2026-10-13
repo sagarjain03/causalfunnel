@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { MotionConfig, motion } from "motion/react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/dashboard", label: "Overview", isActive: (p: string) => p === "/dashboard" },
   { href: "/dashboard/journeys", label: "Journeys", isActive: (p: string) => p.startsWith("/dashboard/journeys") },
+  { href: "/dashboard/heatmap", label: "Heatmap", isActive: (p: string) => p.startsWith("/dashboard/heatmap") },
 ];
 
 const itemClass =
@@ -44,20 +44,6 @@ export function PillNav({ pathname }: PillNavProps) {
             </Link>
           );
         })}
-        {/* Heatmap arrives in Phase 4. Focusable so keyboard users get the tooltip too. */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span
-              role="link"
-              aria-disabled="true"
-              tabIndex={0}
-              className={cn(itemClass, "cursor-not-allowed text-muted-foreground/60")}
-            >
-              Heatmap
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Soon</TooltipContent>
-        </Tooltip>
       </nav>
     </MotionConfig>
   );

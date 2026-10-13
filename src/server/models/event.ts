@@ -13,6 +13,7 @@ const eventSchema = new Schema(
     viewport_w: Number,
     viewport_h: Number,
     page_h: Number,
+    layout_w: Number, // document.documentElement.clientWidth (viewport minus scrollbar); missing on older clicks
     // optional context
     referrer: String,
     user_agent: String,

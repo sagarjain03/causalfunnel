@@ -40,12 +40,13 @@ DESIGN.md describes the UI **as it is in the code** (sections marked Built / Pla
 - **Page headers:** every dashboard page starts with `PageTitle` (24px/500 `h1`) plus **one** muted sentence of real database numbers (streamed in `<Suspense>`). No greetings, no date pills, no decorative copy.
 - **No all-caps.** No `uppercase` class or letter-spaced eyebrow labels. Sentence case everywhere.
 - **Mono only for session ids** (Geist Mono). Other numbers use Onest with `tabular-nums`.
-- **Motion budget.** Built: the nav pill slide (motion), plus shadcn/sonner defaults that are kept as-is (skeleton `animate-pulse`, table-row `transition-colors`, sonner toasts). Planned: count-up, bar grow, heatmap replay, live-dot pulse (DESIGN.md §9). Nothing else animates; other hovers are instant (no `transition-*` on buttons, tooltip, nav or timeline).
+- **Motion budget.** Built: the nav pill slide (motion), the heatmap replay (anime.js), plus shadcn/sonner defaults that are kept as-is (skeleton `animate-pulse`, table-row `transition-colors`, sonner toasts). Planned: count-up, bar grow, live-dot pulse (DESIGN.md §9). Nothing else animates; other hovers are instant (no `transition-*` on buttons, tooltip, nav or timeline).
 - Respect `prefers-reduced-motion`: CSS animations and transitions are cut globally; motion uses `MotionConfig reducedMotion="user"`; future JS animations must check `window.matchMedia` and render the final state.
 - Colors come from CSS variables in `globals.css`. **No hex codes in dashboard components.**
 - Every data card has three states: **loading** (skeleton in the card's shape), **empty** (message + "Open demo store"), **error** (message + retry).
 - Mobile works at 375px with no page-level horizontal scroll. Journeys table below `sm`: only id, status, narrow "last seen"; the Path column needs `md`. The planned bento becomes a single column in the DESIGN.md §6 order; wide content scrolls inside its card, never the page.
 - **Demo store (`public/demo`)** has its own design, defined in `store.css` (DESIGN.md §10); dashboard rules (tokens, glass, orange budget, no hex) don't apply there. Keep it static (no JS except `tracker.js`), keep every image a CSS background on a fixed-size box (no `<img>`, so layout never shifts), and credit every photo in `img/CREDITS.md` (Unsplash/Pexels license only). Product photos must have a plain white or light-grey studio background. Hero text must keep ≥ 4.5:1 contrast (worst case against the brightest pixel behind it); the `.hero::before` overlay provides it.
+- **Heatmap accuracy:** plot only clicks recorded at one exact `viewport_w` at a time (no desktop/mobile buckets), rendered at that group's layout width (`layout_w`, else `viewport_w`) and its tallest `page_h`. Never mix widths in one view.
 - **Automated visits to demo pages** (Playwright, screenshots, scripts) must add `?cf_preview=1` so the tracker sends nothing.
 
 ## 4. Code rules
@@ -62,6 +63,7 @@ DESIGN.md describes the UI **as it is in the code** (sections marked Built / Pla
 - Use `.lean()` on read queries. Sorting is always explicit.
 - File names: `kebab-case.tsx`. Components: `PascalCase`. One component per file.
 - `tracker.js` is plain ES2017, no dependencies, wrapped in an IIFE, under ~3 KB.
+- **Tracker cache-busting:** every `public/demo` page loads the tracker as `/tracker.js?v=N`. **Bump N in all demo pages whenever `tracker.js` changes** (current: `v=2`). `/tracker.js` itself is served with `Cache-Control: public, max-age=300` (`next.config.ts` `headers()`).
 - Any future automated browser or script test (Playwright, smoke scripts, console snippets) must use page URLs under `/__test/` (e.g. `http://localhost:3000/__test/load-more`), so `npm run clean:test` removes them.
 - NEVER run git commit, git push, or any git command that changes history. The user commits manually. When a task is done, suggest a commit message in the format `feat(api): add sessions endpoint` and stop.
 
