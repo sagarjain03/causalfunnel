@@ -9,7 +9,7 @@ There are two separate designs:
 
 ## 1. Direction: "Bento on dark" (Built)
 
-A deep-black bento dashboard with charcoal surfaces and glossy glass controls: the app sits in a rounded frame, data lives in mixed-size cards, and one quiet main color (sage-teal) carries the data. A small orange accent marks the few things that need attention. The signature texture is a **diagonal hatch** on bars and fills (Planned: no bars are built yet).
+A deep-black bento dashboard with charcoal surfaces and glossy glass controls: the app sits in a rounded frame, data lives in mixed-size cards, and one quiet main color (sage-teal) carries the data. A small orange accent marks the few things that need attention. The signature texture is a **diagonal hatch** on bars and fills (Built on the Overview, §3).
 
 References from the user:
 - **Layout:** a dark logistics dashboard (floating pill navbar, mixed-size cards, hatched bars, sage + orange).
@@ -104,9 +104,9 @@ Because `--primary` is orange, components whose *default* variant is primary (Ba
 - `--app` text on `--orange`: 6.37:1.
 - White on orange is 3.11:1, which fails for body text, so it isn't used.
 
-## 3. Texture: diagonal hatch (utility Built, not used yet)
+## 3. Texture: diagonal hatch (Built)
 
-The `hatch` utility exists in `globals.css`. Planned use: **bars and progress fills only**, never as decoration.
+The `hatch` utility in `globals.css` is used for **bars and progress fills only**, never as decoration (Overview funnel, devices, top elements).
 
 ```css
 @utility hatch {
@@ -118,10 +118,12 @@ The `hatch` utility exists in `globals.css`. Planned use: **bars and progress fi
 }
 ```
 
-Planned bar styles:
+Inside Recharts charts (SVG) the same texture is an SVG `<pattern>` (`overview/hatch-pattern.tsx`): 45° sage strokes at 35% opacity every 6px.
+
+Bar styles:
 - **Default bar:** hatch on a transparent background, with a 1px `--line` outline and the top corners rounded at 6px.
 - **Current bar:** solid `--sage`.
-- **Highlighted bar:** solid `--orange`, at most one per chart.
+- **Highlighted bar:** solid `--orange`, at most one per chart (none used yet).
 - **Horizontal bars:** the same hatch, filling from the left.
 
 ## 4. Typography (Built)
@@ -181,9 +183,10 @@ A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is 
 **"Includes demo data" pill:** when any event has `source: "seed"`, a small muted pill (`glass`, 12px, `--text-muted`, like the "Browsing" status pill) sits next to the page title on Overview, Journeys and Heatmap, and next to "← All journeys" on journey detail. It streams in separately (no skeleton) and has a tooltip explaining `npm run seed -- --clear`.
 
 There's no greeting and no date pill. Each page starts with `PageTitle` (`components/dashboard/page-title.tsx`): an `h1` (24px/500) and **one muted sentence of real data** under it. The sentence streams behind `<Suspense>`, with a 20×256px skeleton line while it loads.
-- **Overview:** `{n} journeys and {m} events. Last activity {relative time}.`
-  - `n` and `m` come from `getOverviewStats()`; the last activity from `getLastEventAt()`.
-  - It says "No activity yet." when there are no events.
+- **Overview:** `{n} journeys and {m} events in the last {7|14|28} days. Last activity {relative time}. ({time zone})`
+  - `n` and `m` are the current-period KPI totals (§6); the last activity comes from `getLastEventAt()`.
+  - It says "No activity yet." when there are no events, and "(UTC, browser time zone not known yet)" before the `cf_tz` cookie exists.
+- **Action slot:** `PageTitle` takes an optional `action` (Overview: the range pill), on the right from `md` up and under the title below `md`. Without it the title looks as before.
 - **Journeys:** `{n} journeys, {k} reached checkout.`, from `getJourneyStats()`.
 - **Heatmap:** `{n} clicks on {page label} at {width}px.`, for the selected page and exact width (§7).
 - **Journey detail:** no page title; it keeps its "← All journeys" link and the summary card.
@@ -241,39 +244,45 @@ There are two utilities in `globals.css`:
 ### Tooltips
 `ui/tooltip.tsx`: a light tooltip (`--text` background, `--app` text), 12px, `rounded-md`, with **no animation** (the shadcn fade and zoom were removed).
 
-## 6. Overview
+## 6. Overview (Built)
 
-### Built (Phase 3.5 Step A)
-- **Page title** "Overview" + its summary sentence (§5).
-- A 12-column grid (1 column below `lg`), 16px gap.
-- **"Totals" card** (`lg:col-span-4`): 2×2 raised tiles with a 12px gap: **Sessions, Events, Clicks, Pages tracked**. These are **all-time** totals from `getOverviewStats()`.
-  - Each tile: an icon square (`--panel`) + a muted label on one row, then the big number.
-  - No change pills.
-- **Empty database:** an empty-state card across the whole grid: "No events yet", a sentence, and "Open demo store".
-- **Loading:** a skeleton of the same card (title bar + 4 tiles, no numbers).
+Files: `src/app/dashboard/page.tsx` + `src/components/overview/*`. Every number comes from `src/server/services/overview.ts` (ARCHITECTURE.md §4.1).
 
-### Planned (Step B), the bento
-Desktop is a 12-column grid with a 16px gap. Every number comes from the services in ARCHITECTURE.md §4.1.
+### Range and time zone
+- **Range pill** (`range-select.tsx`): a glass segmented pill of Links, `7d | 14d | 28d` (`?range=`, default 7, anything else → 7). The active segment uses the active-nav look (`glass-shine bg-panel-raised`). While it streams, the same pill renders with no active segment.
+- **Time zone:** days and hours are in the viewer's zone, read from the `cf_tz` cookie (`TimezoneSync` in the dashboard layout). The zone is named in the title sentence and in the Activity and heat-grid descriptions.
 
-| Position | Card | Content |
+### Definitions
+- **Journey** = a session. It belongs to the period its **first event** falls in.
+- **Current period:** the last N calendar days in the viewer's zone, today included up to now. **Previous period:** the N days before, cut at the same time of day (equal elapsed time).
+- **Conversion rate:** journeys that visited a page ending `/checkout.html` ÷ journeys.
+- **Avg journey duration:** mean of (last − first event); bounces count as 0s.
+- **Bounce rate:** journeys with exactly one `page_view` ÷ journeys.
+- **Clicks:** click events with a timestamp in the period.
+- **Change pill** (`change-pill.tsx`): counts and duration show ±% vs the previous period; rates show ±pp. "New" when the previous value is 0 (for rates: when the previous period had no journeys); "No data" when both are 0; "No change" when the rounded delta is 0. Green (`--up`) = up, red (`--down`) = down; **bounce rate is inverted** (up is red). The tooltip shows the previous value.
+
+### Layout
+12-column grid, 16px gap. One column below `lg`, in source order.
+
+| Row | Card | Content |
 |---|---|---|
-| Left, span 4, tall | **Activity this week** | "**{n}%** more/less than last week" ("New this week" if last week = 0). 7 vertical hatched bars, oldest → today; **today's bar is solid sage** with a value pill. |
-| Middle top, span 4 | **2×2 tiles** | Sessions, Events, Clicks, Pages, with change pills vs the previous 7 days. |
-| Middle bottom, span 4 | **Top pages** | Up to 5 pages by clicks: path chip, horizontal hatched bar, count. |
-| Right, span 4, tall | **Heatmap preview** + **Latest journey** | A scaled iframe of the most-clicked page (`?cf_preview=1`) with desktop click dots, plus "Open heatmap". Below it, the newest session's last 8 steps as a timeline, plus "View journey". |
-| Bottom, span 8 | **Clicks by day and hour** | Heat grid, 7 rows (Mon–Sun) × 12 two-hour columns, in the viewer's time zone, over the last 28 days, with a legend of real min and max counts. |
-| Bottom, span 4 | **Recent journeys** | The newest 5 sessions: short id, events, status pill, last seen. |
+| 1, span 12 | **KPI strip** | 5 tiles (5 across on `lg`; 2 per row below, the last full width): Journeys, Conversion rate, Avg journey duration, Bounce rate, Clicks. Each: muted label, big number (300 weight, 28/32/40px, never wraps), change pill, 40px daily sparkline (sage line over the hatch pattern). The definition is the tile's `title`. |
+| 2, span 8 | **Funnel** | Home → Products → Product → Checkout (journeys that visited each page, any order). Horizontal hatched bars scaled to the largest step, the last step solid sage; count + % of step 1 (stacked below `sm`); "↓ x% drop-off" between steps. Each row links to `/dashboard/heatmap?page=<most common URL for that step>`. |
+| 2, span 4 | **Devices** | Desktop (≥ 768px) and Mobile (< 768px) by the widest click `viewport_w` of the journey: hatched bar, journeys, conversion. Journeys without clicks are listed as "Unknown (no clicks)" (page views carry no width). |
+| 3, span 8 | **Activity** | Recharts ComposedChart, min 240px tall (grows with the row): daily journeys as hatched bars (left axis "Journeys", today solid sage) and daily events as a `--sage-dim` line (right axis "Events"). X axis = dates in the viewer's zone. |
+| 3, span 4 | **Top clicked elements** | Top 6 (page, `target`) pairs by clicks: target text (truncated, full text in `title`), page-label chip, hatched bar, count. Rows link to that page's heatmap. A muted line counts older clicks without `target`. |
+| 4, span 8 | **Clicks by day and hour** | 7 rows (Mon–Sun, ISO) × 12 two-hour columns, cells `--heat-1…4` with the heatmap Grid thresholds (empty = no fill), native `title` per cell ("Tue 18–20: 14 clicks"). Legend shows the real min and max non-empty cell. Below `lg` it scrolls sideways inside the card (sticky weekday column). |
+| 4, span 4 | **Recent journeys** | The newest 6 journeys overall (not range-bound): short id, relative time, `JourneyPath` (max 3 chips), status pill. Rows link to the journey; "All journeys" link top right. |
 
-**Mobile order:**
-1. tiles
-2. activity
-3. heatmap preview
-4. latest journey
-5. top pages
-6. heat grid (scrolls inside its card)
-7. recent journeys
+### Charts
+- Recharts via shadcn `ui/chart.tsx` (`ChartContainer`, `ChartTooltip`). Colors are config tokens (`var(--sage)`, `var(--sage-dim)`), grid lines `var(--line)`; no hex in components.
+- Every chart has a tooltip with the date and exact values; axes are labelled with units.
+- No chart animation (§9).
 
-**Empty database:** one large empty-state card; no zero-filled charts.
+### States
+- **Loading:** one skeleton per card in its shape and height (no numbers). The KPI skeleton is 5 tiles.
+- **Empty:** per card, e.g. "No journeys in the last 7 days." + "Open demo store". The KPI strip collapses to one empty card. No zero-filled charts.
+- **Error:** per card (§8).
 
 ## 7. Other pages
 
@@ -356,7 +365,8 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
 
 - **Loading:** shadcn `Skeleton` blocks (`--panel-raised`, with shadcn's default `animate-pulse`) in the shape of the real content (totals tiles, table rows, summary + timeline + preview). They show no numbers.
 - **Empty:** a card with a 36px icon square, a title (18px/500), one muted sentence, and the orange **"Open demo store"** pill (a plain `<a href="/demo">`).
-- **Error:** `error.tsx` in each route segment renders a card with a `--down` warning icon, "Something went wrong", a sentence, an optional "Ref: <digest>", and an outline glass **"Try again"** (`retry()`). The frame and navbar stay visible.
+- **Error (per card, Overview):** each Overview card is wrapped in `CardErrorBoundary` (`catchError` from `next/error`): a card with a `--down` warning icon, "Couldn't load {card}", and an outline **"Try again"** (`retry()`). The other cards keep working.
+- **Error (page):** `error.tsx` in each route segment renders a card with a `--down` warning icon, "Something went wrong", a sentence, an optional "Ref: <digest>", and an outline glass **"Try again"** (`retry()`). The frame and navbar stay visible.
 
 ## 9. Motion
 
@@ -367,6 +377,7 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
 | Skeleton pulse | `ui/skeleton.tsx` (shadcn default) | `animate-pulse` while loading |
 | Table row hover | `ui/table.tsx` (shadcn default) | `transition-colors` on the row background |
 | Toasts | sonner (library default) | slide-in; the loading icon spins |
+| Overview charts | Recharts (`sparkline.tsx`, `activity-chart.tsx`) | **no animation**: every series has `isAnimationActive={false}`, so reduced-motion users see nothing move either |
 | Heatmap replay | `replay-bar.tsx` (anime.js `animate()`) | the slider value animates linearly to the end, 2s for the full span; dots appear in timestamp order as it passes them; reduced motion → jump to the end |
 
 All other hover changes are instant: the transitions were removed from buttons, the tooltip, the nav items, the timeline and the Select (`ui/select.tsx`: no open/close animation, no trigger transition).
@@ -375,7 +386,7 @@ All other hover changes are instant: the transitions were removed from buttons, 
 | What | Library | Spec |
 |---|---|---|
 | Big numbers count up | anime.js | once on first load, 600ms, `outExpo` |
-| Bars grow from 0 | anime.js | once, 40ms stagger, ≤ 600ms each |
+| Bars grow from 0 | anime.js | once, 40ms stagger, ≤ 600ms each (not on the Overview: its bars and charts are static by decision) |
 | Live dot pulse | CSS | slow, only while "Live" |
 
 - No page transitions, no hover lift or scale, no row stagger.

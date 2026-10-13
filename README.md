@@ -7,7 +7,7 @@ A small user-analytics product built for the CausalFunnel Full Stack Engineer as
 
 ## Screenshots
 
-**Overview:** totals and a one-line summary from the database.
+**Overview:** KPIs for the last 7/14/28 days vs the previous period, the Home → Checkout funnel, devices, daily activity, top clicked elements, clicks by day and hour, and recent journeys. All computed by MongoDB aggregations in the viewer's time zone.
 
 ![Overview](docs/images/overview.png)
 
@@ -297,7 +297,6 @@ docs/                        PRD, architecture, design, rules, phases, memory, i
 
 ## What I would do next
 
-- **Overview bento:** weekly activity bars, change vs the previous week, top pages, a heatmap preview, a clicks-by-hour grid. These are specified in `docs/DESIGN.md` and not built yet.
 - **Identity:** a persistent `visitor_id` across sessions, and optional linking to logged-in users.
 - **Security:** authentication for the dashboard, per-site keys or an enforced origin allowlist for ingestion, rate limiting.
 - **Scale:** a pre-aggregated `sessions` collection updated on insert, and time-bucketed rollups for the dashboard.

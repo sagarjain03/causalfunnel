@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** Phase 4 heatmap done; tracker `target` + seed data done (uncommitted). DB: 85 real events + 2,899 seed events (150 seeded journeys).
+- **Phase:** Overview rebuilt as a real analytics dashboard (uncommitted). Before that: Phase 4 heatmap, tracker `target` + seed data. DB: 85 real events + 2,899 seed events (150 seeded journeys).
 - **Working on (file):** none
-- **Next step:** README: add seeding steps (`npm run seed`, `--origin`, `--clear`, Node 22.6+ for seeding), the `target` field in the API section, and the tracker size (~5 KB). Then Phase 3.5 Step B.
+- **Next step:** user review of the Overview + commit. Then README: add seeding steps (`npm run seed`, `--origin`, `--clear`, Node 22.6+ for seeding), the `target` field in the API section, and the tracker size (~5 KB). Then Phase 3.5 Step B.
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -69,6 +69,15 @@
   - First run result: 150 journeys, 2,899 events, 2,519 clicks; funnel 100 → 70.0 → 45.3 → 18.0%; 15.3% bounced; devices (journeys with clicks, n=127) 66.1% desktop / 33.9% mobile.
   - Verified: all 2,519 seeded clicks land on the element named by their `target` in the heatmap preview (4 pages × 5 widths); `--clear` removed only the 2,899 seed events (85 real untouched); `clean:test` finds nothing.
   - Earlier capture attempts were wrong and fixed: scrollIntoView scrolled sideways strips; sticky elements moved with window scroll; mobile emulation (DPR 3) wrapped text differently than the preview; ±2px jitter crossed label/input borders. The preview-identical iframe capture + safe neighbourhoods fixed all (99.6% → 100%).
+
+- [2026-10-14] Overview rebuild (uncommitted):
+  - `src/server/services/overview.ts` (aggregation only): `periodBounds`, `getOverviewKpis`, `getFunnel`, `getDeviceSplit`, `getTopTargets`, `getClickGrid` (ARCHITECTURE §4.1). `src/components/overview/*`: range pill, KPI strip, funnel, devices, activity, top elements, click grid, recent journeys, per-card skeleton / empty / `catchError` error. `TimezoneSync` writes `cf_tz`. `PageTitle` got an optional `action` slot.
+  - Deleted the old Totals card (`overview-stats.tsx`, `stat-tile.tsx`, `overview-stats-skeleton.tsx`) and the now-unused `getOverviewStats()` + `OverviewStats` type.
+  - Definitions (DESIGN §6): journey belongs to the period of its first event; previous period cut at the same time of day; bounce = exactly 1 page view; avg duration counts bounces as 0; devices from the widest click width, no clicks = "Unknown".
+  - `npx shadcn add chart` installed `recharts@3.8.0` + `ui/chart.tsx`; it pulled in the `cn` npm package again → `chart.tsx` imports `cn` from `@/lib/utils` and `cn` was uninstalled. `card.tsx` was NOT overwritten (answered "n"). `chart.tsx` has shadcn's `[stroke='#ccc']` / `[stroke='#fff']` attribute selectors: they only match Recharts' default colors to override them with tokens, so they don't break the no-hex rule.
+  - `heatClass` is exported from `heatmap-overlay.tsx` (shared with the click grid); `JourneyPath` got an optional `max` chip count. Sparkline tooltips use the default indicator (with `indicator="line"` shadcn hides the date when a custom formatter is used).
+  - Verified: tsc, lint, build (`/dashboard` ◐). An independent check (plain `find()` + JS counting) matched every number on the page for 7 and 28 days (Asia/Calcutta): 7d = 38 journeys (+8.6%), 21.1% conversion (+3.9 pp), 2m 33s (+34.8%), 28.9% bounce (−2.5 pp), 582 clicks (+0.3%), funnel 36/27/18/8, devices 16/15/7 unknown; 28d funnel = 151/107/69/29 (seed 150/105/68/27 + real journeys), previous period empty → all "New". Playwright: range links, cookie + zone label, heatmap links, chart tooltips (date + exact values), no horizontal overflow at 375px, per-card error UI (temporary throw in `getDeviceSplit`, reverted).
+  - Screenshots: `screenshots/overview-1280.png`, `screenshots/overview-375.png` (both full page).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.

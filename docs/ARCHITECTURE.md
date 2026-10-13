@@ -8,7 +8,8 @@
 | Language | **TypeScript** (strict) | Shared types between API and UI. |
 | UI | **React 19**, **Tailwind CSS v4**, **shadcn/ui** | Accessible primitives we own as source code. |
 | Fonts | **Onest** (`next/font/google`, weights 300–600) + **Geist Mono** for session ids | See DESIGN.md §4. General Sans was dropped: its ITF Free Font License §02 forbids distributing the font files through a public repository. |
-| Animation | **motion** for the navbar pill slide only, **anime.js v4** for number count-up, bar grow and heatmap replay | See DESIGN.md §9 and RULES.md §3. |
+| Animation | **motion** for the navbar pill slide only, **anime.js v4** for the heatmap replay | See DESIGN.md §9 and RULES.md §3. |
+| Charts | **Recharts 3** via shadcn `ui/chart.tsx` | Overview sparklines and the activity chart only; other bars and grids are plain HTML + the `hatch` utility. |
 | Icons | **lucide-react** | Default for shadcn. |
 | Validation | **zod** v4 | Validate every API input at the boundary. |
 | Database | **MongoDB Atlas** + **mongoose** | Required by assignment. |
@@ -98,28 +99,38 @@ type ClickPoint = { x; y; viewport_w; page_h }
 
 Status codes: `400` validation, `404` unknown session, `405` wrong method, `500` unexpected (logged, generic message to client).
 
-### 4.1 Overview services
+### 4.1 Overview services (Built)
 
-The Overview bento (DESIGN.md §6) is rendered by Server Components that call these functions directly; there are no new public API routes. All live in `src/server/services/` and **must be computed with MongoDB aggregation**. JavaScript may only shape the result (e.g. filling days with no events with 0), never count or group raw events.
+The Overview (DESIGN.md §6) is rendered by Server Components that call these functions directly; there are no new public API routes. Counting and grouping happen **only in MongoDB aggregations**; JavaScript fills days with no data with 0 and shapes results.
 
-| Function | File | Returns | How |
-|---|---|---|---|
-| `getWeeklyActivity(timeZone)` | `stats.ts` | `{ days: { date: "YYYY-MM-DD", events: number }[7], thisWeek: number, lastWeek: number }`. Days run oldest → today in `timeZone`; `lastWeek` covers the 7 days before. | `$match` timestamp ≥ start of (today − 13 days), `$group` by `$dateToString { format: "%Y-%m-%d", date: "$timestamp", timezone }`. JS fills missing days with 0 and splits the result into the two weeks. |
-| `getStatsWithChange()` | `stats.ts` | For `sessions`, `events`, `clicks` and `pages`: `{ current, previous }`, plus `lastEventAt` (for the live dot) | One `$facet`: rolling windows `[now − 7d, now)` and `[now − 14d, now − 7d)`. Each window counts events, clicks (`event_type: "click"`), distinct `session_id` and distinct `page_url`. `lastEventAt` = `$max` timestamp. `previous = 0` → the UI shows "New this week". |
-| `getClickGrid(timeZone)` | `heatmap.ts` | `{ cells: { day: 1..7, bucket: 0..11, clicks: number }[], max: number }` (ISO weekday, Mon = 1; bucket = 2-hour block) | `$match` clicks in the last 28 days, `$group` by `{ $isoDayOfWeek: { date, timezone } }` and `{ $floor: { $divide: [{ $hour: { date, timezone } }, 2] } }`. |
-| `getLatestJourney(limit = 8)` | `sessions.ts` | `{ session_id, events: EventDto[] } \| null`: the session with the newest event, and its last `limit` events in time order | `$sort { timestamp: -1 }` + `$limit 1` (uses the `{ timestamp: -1 }` index) to find the session, then that session's events via the `{ session_id, timestamp }` index. |
-| `getTopPages(limit = 5)` | `heatmap.ts` | `PageSummary[]` sorted by clicks desc (feeds Top pages; `[0]` feeds the heatmap preview) | The same `$group` as `listPages()`, sorted `{ clicks: -1, page_url: 1 }`, `$limit`. |
-| `getJourneyStats()` (Built) | `sessions.ts` | `{ journeys, reachedCheckout }` for the Journeys page sentence | Two `$group` stages: per session (`$max` of the checkout `$regexMatch`), then totals. |
-| `getLastEventAt()` (Built) | `stats.ts` | Newest event time (Live/Idle pill, Overview sentence) | `findOne().sort({ timestamp: -1 })` on the `{ timestamp: -1 }` index. |
-| `reached_checkout` in `listSessions()` (Built) | `sessions.ts` | A new boolean on every `SessionSummary` | In the existing `$group`: `reached_checkout: { $max: { $regexMatch: { input: "$page_url", regex: "/checkout\.html$" } } }`. |
+The range functions live in `src/server/services/overview.ts` and take `{ days: 7 | 14 | 28, tz, now? }`.
 
-The heatmap preview's dots reuse `getHeatmap(topPage.page_url)`, filtered to `viewport_w ≥ 768`. "Recent journeys" reuses `listSessions({ limit: 5 })`.
+**Periods** (`periodBounds()`):
+- `curStart` = local midnight (in `tz`, DST-safe) of the day `days − 1` days before today; the current period is `[curStart, now)`.
+- The previous period is `[curStart − days·24h, now − days·24h)`: the same elapsed time, cut at the same time of day.
+- A journey (session) belongs to the period of its **first** event. Events are read from `prevStart − 1h` (index on `timestamp`) so sessions are seen whole.
+- `keys` = the N day keys (`YYYY-MM-DD` in `tz`) of the current period, for daily series.
 
-**Time zone for day/hour grouping.** "Today", weekdays and hours depend on the viewer's zone, which the server doesn't know.
-- A tiny client component in the dashboard layout writes the browser's IANA zone (`Intl.DateTimeFormat().resolvedOptions().timeZone`) to a `cf_tz` cookie, and calls `router.refresh()` the first time it sets it.
-- Data components read it with `cookies()` (runtime data, inside `<Suspense>`) and validate it (`new Intl.DateTimeFormat("en", { timeZone })` doesn't throw), falling back to `"UTC"`.
-- The UI labels the grid and the activity chart "UTC" while the fallback is in use.
-- Rolling 7-day windows (`getStatsWithChange`) need no time zone.
+| Function | Returns | How |
+|---|---|---|
+| `getOverviewKpis(q)` | `{ current, previous, daily[] }`; totals = journeys, conversions, bounces, durationMs, clicks, events | `$match` window → `$facet`: (a) `$group` per session (first, last, page views, checkout `$regexMatch`) → period via `$switch` → totals per period and per first-event day (`$dateToString` with `timezone`); (b) events and clicks per period and per day. |
+| `getFunnel(q)` | `FunnelStep[]` (`key, label, journeys, pageUrl`) for `FUNNEL_STEPS` | Per-session `$max` of each step's `$regexMatch`, current period only, then sums. `pageUrl` = the most common `page_url` per step (for the heatmap link). |
+| `getDeviceSplit(q)` | `{ desktop, mobile: { journeys, conversions }, unknown }` | Per-session `$max: viewport_w` (only clicks carry it); ≥ 768 desktop, < 768 mobile, null unknown. |
+| `getTopTargets(q, limit = 6)` | `{ rows: { target, pageUrl, clicks }[], withoutTarget }` | Clicks in the current period, `$facet`: `$group` by `{ page_url, target }` sorted + limited; count of clicks without `target`. |
+| `getClickGrid(q)` | `{ cells: { day: 1..7, bucket: 0..11, clicks }[], min, max, total }` | Clicks in the current period, `$group` by `$isoDayOfWeek` and `$floor($hour / 2)`, both with `timezone`. |
+| `getJourneyStats()` | `{ journeys, reachedCheckout }` (`sessions.ts`, Journeys sentence) | Two `$group` stages. |
+| `getLastEventAt()` | Newest event time (`stats.ts`; Live pill, Overview sentence) | `findOne().sort({ timestamp: -1 })`. |
+
+"Recent journeys" reuses `listSessions({ limit: 6 })` (newest overall, not range-bound).
+
+**Request wiring** (`src/components/overview/`):
+- `overview-params.ts`: `resolveOverviewParams` (React `cache`) awaits `connection()`, parses `?range`, reads and validates `cf_tz`, and fixes one request `now` so every card uses identical bounds.
+- `overview-data.ts`: `cache()`d loaders with primitive args, so cards that need the same data (KPI strip, Activity, title sentence) share one query per request.
+- The page stays synchronous and passes the `searchParams` promise into each card inside `<Suspense>` + `CardErrorBoundary` (`catchError`).
+
+**Time zone (`cf_tz`).**
+- `components/dashboard/timezone-sync.tsx` (client, in the dashboard layout) writes the browser's IANA zone to a `cf_tz` cookie (path `/`, 1 year, `SameSite=Lax`) when it's missing or different, then calls `router.refresh()`.
+- The server validates it with `new Intl.DateTimeFormat("en", { timeZone })` and falls back to `"UTC"`; the title sentence says so while falling back.
 
 ## 5. Heatmap rendering (Built, Phase 4)
 
@@ -172,7 +183,7 @@ causalfunnel/
 │   │   ├── globals.css           # design tokens + .hatch utility (see DESIGN.md)
 │   │   ├── dashboard/
 │   │   │   ├── layout.tsx        # rounded frame + top bar (logo, pill navbar, live dot, demo button)
-│   │   │   ├── page.tsx          # overview bento
+│   │   │   ├── page.tsx          # overview: range pill + 7 cards, each with Suspense + error boundary
 │   │   │   ├── journeys/
 │   │   │   │   ├── page.tsx      # journeys (sessions) table
 │   │   │   │   └── [sessionId]/page.tsx   # timeline + page preview
@@ -185,14 +196,14 @@ causalfunnel/
 │   │       └── pages/route.ts
 │   ├── components/
 │   │   ├── ui/                   # shadcn (generated, do not hand-edit much)
-│   │   ├── dashboard/            # frame, pill-nav, live-dot, greeting, bento cards
-│   │   ├── charts/               # hatched bars, heat grid (no chart library)
+│   │   ├── dashboard/            # frame, pill-nav, live status, page title, timezone-sync
+│   │   ├── overview/             # Overview cards, params (range + cf_tz), cached loaders, Recharts charts
 │   │   ├── sessions/             # sessions-table, event-timeline, page preview
 │   │   └── heatmap/              # page-select, heatmap-canvas, heat-legend
 │   ├── server/                   # backend logic, no React here
 │   │   ├── db.ts                 # cached mongoose connection
 │   │   ├── models/event.ts       # schema + indexes
-│   │   ├── services/             # events.ts, sessions.ts, heatmap.ts, stats.ts (see §4.1)
+│   │   ├── services/             # events.ts, sessions.ts, heatmap.ts, stats.ts, overview.ts (see §4.1)
 │   │   └── http.ts               # ok(), fail(), cors helpers
 │   ├── lib/
 │   │   ├── utils.ts              # cn()

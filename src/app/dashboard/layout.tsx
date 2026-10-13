@@ -3,6 +3,7 @@ import { ActivePillNav } from "@/components/dashboard/active-pill-nav";
 import { LiveStatus } from "@/components/dashboard/live-status";
 import { Logo } from "@/components/dashboard/logo";
 import { PillNav } from "@/components/dashboard/pill-nav";
+import { TimezoneSync } from "@/components/dashboard/timezone-sync";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
@@ -33,6 +34,7 @@ export default function DashboardLayout({ children }: LayoutProps<"/dashboard">)
         <main className="flex flex-col gap-4">{children}</main>
       </div>
       <Toaster />
+      <TimezoneSync />
     </TooltipProvider>
   );
 }

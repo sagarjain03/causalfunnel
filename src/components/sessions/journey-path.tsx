@@ -4,8 +4,8 @@ import { pageLabel } from "@/lib/format";
 const MAX_CHIPS = 4;
 
 /** A journey's page sequence as small glass chips joined by "→", e.g. Home → Products → Checkout, then "+n". */
-export function JourneyPath({ path }: { path: string[] }) {
-  const shown = path.slice(0, MAX_CHIPS);
+export function JourneyPath({ path, max = MAX_CHIPS }: { path: string[]; max?: number }) {
+  const shown = path.slice(0, max);
   const rest = path.length - shown.length;
 
   if (path.length === 0) return <span className="text-xs text-muted-foreground">—</span>;

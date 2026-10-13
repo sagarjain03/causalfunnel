@@ -32,7 +32,7 @@ export function buildGrid(clicks: ClickPoint[]): GridCell[] {
 }
 
 /** Heat ramp step for count / maxCount (empty cells are never rendered, so they stay transparent). */
-function heatClass(ratio: number): string {
+export function heatClass(ratio: number): string {
   if (ratio <= 0.25) return "bg-heat-1";
   if (ratio <= 0.5) return "bg-heat-2";
   if (ratio <= 0.75) return "bg-heat-3";

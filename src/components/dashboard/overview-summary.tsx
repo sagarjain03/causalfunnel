@@ -1,19 +1,12 @@
-import { connection } from "next/server";
+import { loadKpis, loadLastEventAt } from "@/components/overview/overview-data";
+import { resolveOverviewParams, type OverviewSearchParams } from "@/components/overview/overview-params";
 import { formatRelative, plural } from "@/lib/format";
-import { getLastEventAt, getOverviewStats } from "@/server/services/stats";
 
-/** Totals and the newest event time, plus when they were fetched (the reference point for "5 minutes ago"). */
-async function loadSummary() {
-  await connection();
-  const [stats, lastEventAt] = await Promise.all([getOverviewStats(), getLastEventAt()]);
-  return { stats, lastEventAt, fetchedAt: Date.now() };
-}
-
-/** "{n} journeys and {m} events. Last activity {relative time}." */
-export async function OverviewSummary() {
-  const { stats, lastEventAt, fetchedAt } = await loadSummary();
-  const activity = lastEventAt
-    ? `Last activity ${formatRelative(lastEventAt.toISOString(), fetchedAt)}.`
-    : "No activity yet.";
-  return `${plural(stats.sessions, "journey")} and ${plural(stats.events, "event")}. ${activity}`;
+/** "{n} journeys and {m} events in the last 7 days. Last activity {relative time}. (Asia/Kolkata)" */
+export async function OverviewSummary({ searchParams }: { searchParams: OverviewSearchParams }) {
+  const { days, tz, tzFromViewer, now } = await resolveOverviewParams(await searchParams);
+  const [{ current }, lastEventAt] = await Promise.all([loadKpis(days, tz, now), loadLastEventAt()]);
+  const activity = lastEventAt ? `Last activity ${formatRelative(lastEventAt.toISOString(), now)}.` : "No activity yet.";
+  const zone = tzFromViewer ? tz : "UTC, browser time zone not known yet";
+  return `${plural(current.journeys, "journey")} and ${plural(current.events, "event")} in the last ${days} days. ${activity} (${zone})`;
 }

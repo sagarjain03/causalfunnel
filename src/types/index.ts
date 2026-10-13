@@ -70,10 +70,3 @@ export type PageSummary = {
   clicks: number;
   views: number;
 };
-
-export type OverviewStats = {
-  sessions: number;
-  events: number;
-  clicks: number;
-  pages: number;
-};
