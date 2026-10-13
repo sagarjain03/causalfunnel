@@ -263,7 +263,7 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
   - **Events, Clicks, Pages:** right-aligned `tabular-nums`; **hidden below `sm`**.
   - **Status:** the glass status pill.
   - **Last seen:** right-aligned, muted. From `sm` up it's the long form ("4 minutes ago"); below `sm` it's the narrow form ("4m ago"). Hover shows the ISO time.
-- **Below `sm`** only **Journey, Status, Last seen** show, and the table fits 375px with no scrolling (`overflow-x-auto` is only a fallback).
+- **Below `sm`** only **Journey, Status, Last seen** show, and the table fits 375px with no scrolling (`overflow-x-auto` is only a fallback). The "Last seen" header may wrap to two lines below `sm`.
 - **Rows:** the whole row is clickable, with a `--line` divider and `--panel-raised` hover.
 - **Footer:** "N journeys shown" (12px muted) on the left; an outline glass **"Load more"** on the right, hidden when there's no next page. If loading fails, a sonner toast says "Could not load more journeys".
 - **Empty:** an empty state inside the card (no border or background of its own): "No journeys yet" + "Open demo store".
@@ -365,7 +365,7 @@ The back-to-top bar is `#37474F`. Image placeholder tiles: `#F3F4F4` (cover) and
   - "Hello, sign in / Account & Lists", "Returns & Orders", and a cart with a teal count
   - then a 40px **category strip** (`--ink-2`): "☰ All", Fresh, Today's Deals, …, Customer Service; it scrolls sideways when narrow.
 - **`/demo`:**
-  - a 420px hero (`hero.jpg`, teal → gold gradient behind it) with "The Festive Edit is live", a sentence and a gold "Shop the sale"; it fades into the page
+  - a 420px hero (`hero.jpg`, teal → gold gradient behind it; the text block sits between `left: 6%` and `right: 6%`, max 460px wide) with "The Festive Edit is live", a sentence and a gold "Shop the sale"; it fades into the page
   - **4 deal cards** overlapping the hero by 170px: Trending deals, Under ₹299, Up to 60% off | Self-care & home, and Sign in. Each holds a 2×2 image grid and a "See …" link.
   - a "Best sellers in Sports & Outdoors" row that scrolls inside its card
   - "Back to top" and the footer

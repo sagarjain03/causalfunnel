@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** 3.5 Step A complete + demo store redesign + images + docs sync (all uncommitted). **Waiting for the user's "yes"** on the /demo data cleanup (see Known issues).
+- **Phase:** 3.5 Step A + demo store + images + docs sync complete (uncommitted). The events collection is **empty** (0 events, 2026-10-13) — heatmaps start fresh on the new demo layout.
 - **Working on (file):** none
-- **Next step:** after the cleanup decision → Phase 3.5 Step B (ARCHITECTURE §4.1 services, then the bento cards in DESIGN.md §6 "Planned").
+- **Next step:** Phase 3.5 Step B (ARCHITECTURE §4.1 services, then the bento cards in DESIGN.md §6 "Planned").
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -39,6 +39,10 @@
   - The demo pages have no `<img>`: every image is a CSS background on a fixed-size box. Playwright, images blocked vs loaded on all 4 pages at 1280 and 375: 0 element boxes moved.
   - DESIGN.md rewritten to describe the code exactly (Built vs Planned) + new §10 Demo store; RULES §3 rewritten to match.
   - 14 full-page screenshots in `screenshots/` (gitignored), all with `?cf_preview=1` on demo URLs. Event count before and after: 92 (no new events); clean:test dry run found nothing.
+- [2026-10-13] Two 375px layout fixes (no design change):
+  - Journeys table: the shadcn `table-container` scrolled because the table's min width was 296px in a 292px box (the "Last seen" header was `whitespace-nowrap`). That header may now wrap below `sm` ("Last / seen", still 40px tall); the table fits exactly.
+  - `/demo` hero: `.hero .copy` had `left: 6%` and no `right`, so the subtitle ran to the screen edge; added `right: 6%` (desktop unchanged: still 460px max-width at left 6%).
+  - Verified with 3 temporary `/__test/` journeys (removed with `clean:test`, count back to 0). Re-took `screenshots/journeys-375.png` and `screenshots/demo-home-375.png`.
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -91,5 +95,5 @@
 - ~~Smoke test data stays in the DB and appears in the dashboard.~~ Resolved: run `npm run clean:test` (dry run), then `npm run clean:test -- --yes` to delete.
 - The Atlas password was once in `.env.example` (never committed; it now holds placeholders). Rotate it before deploying.
 - All manual test clicks so far were made with DevTools docked, at `viewport_w` ≈ 618px, so they fall in the mobile (<768px) bucket. An empty Desktop heatmap in Phase 4 is expected until desktop-width clicks are generated. This is not a bug.
-- **Pending deletion (needs the user's "yes")**: session `414d002c-ab2f-4dab-abc3-e5906d5f2245` (1 event, from my `?__test_preview=1` mistake) + ALL events whose path starts with `/demo` (old layouts). Dry run (15:2x UTC): 90 of 90 events matched (5 sessions), deleting empties the collection; the count was 92 later (2 new user clicks), so re-run the dry run first. Script: `scratchpad/cleanup-demo.mjs` (session-only, not in the repo).
+- [Done 2026-10-13, user said yes] Deleted all `/demo*` events (old layouts) incl. sessions `414d002c…` and `ad0e7dc5…`: 92 events, collection now 0.
 - The build warns about a stray `D:\pnpm-lock.yaml` outside the repo (harmless; delete it or set `turbopack.root`).

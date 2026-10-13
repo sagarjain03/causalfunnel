@@ -56,7 +56,8 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
               <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Clicks</TableHead>
               <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Pages</TableHead>
               <TableHead className="text-muted-foreground">Status</TableHead>
-              <TableHead className="text-right text-muted-foreground">Last seen</TableHead>
+              {/* Below sm the header may wrap ("Last / seen"), so the 3 visible columns fit 375px without a scrollbar. */}
+              <TableHead className="text-right whitespace-normal text-muted-foreground sm:whitespace-nowrap">Last seen</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
