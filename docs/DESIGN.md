@@ -1,61 +1,75 @@
 # Design
 
-## 1. Direction: "Bento on dark"
+This file describes the UI **as it is in the code**. Sections are marked **Built** (in the code now) or **Planned** (specified, not built yet).
+If the code and this file disagree, the code was changed without updating the docs: fix the docs or ask, don't "fix" the design back.
 
-A deep-black bento dashboard with charcoal surfaces and glossy glass controls: the app sits in a rounded frame, data lives in mixed-size cards, and one quiet main color (sage-teal) carries all the data. A small orange accent marks the few things that need attention. The signature texture is a **diagonal hatch** on bars and fills.
+There are two separate designs:
+- **Dashboard** (`src/app/dashboard`): "Bento on dark", §1–§9.
+- **Demo store** (`public/demo`): "Northwind", a light, Amazon-style marketplace with its own brand, §10. The dashboard rules don't apply to it.
 
-Reference: a dark logistics dashboard with a floating pill navbar, mixed-size cards, hatched bars, a sage main color and an orange accent. We borrow its structure and texture, not its content.
+## 1. Direction: "Bento on dark" (Built)
+
+A deep-black bento dashboard with charcoal surfaces and glossy glass controls: the app sits in a rounded frame, data lives in mixed-size cards, and one quiet main color (sage-teal) carries the data. A small orange accent marks the few things that need attention. The signature texture is a **diagonal hatch** on bars and fills (Planned: no bars are built yet).
+
+References from the user:
+- **Layout:** a dark logistics dashboard (floating pill navbar, mixed-size cards, hatched bars, sage + orange).
+- **Controls:** glossy dark "glass" pill buttons.
+
+We borrow structure and texture, not content.
 
 **Honesty rule:** every number on screen comes from the database. There are no placeholder, decorative or "example" numbers anywhere, including empty states, legends and skeletons.
 
 Dark is the only theme (`<html class="dark">`).
 
-## 2. Colors
+## 2. Colors (Built)
 
-All tokens live in `src/app/globals.css` as CSS variables. Components use Tailwind token classes, never hex.
+All tokens live in `src/app/globals.css` as CSS variables. Components use Tailwind token classes (`bg-panel`, `text-muted-foreground`, `text-sage`, …), never hex.
 
 ### Surfaces & text
 Neutral charcoal (no blue tint). The background is deep black; every surface is a step lighter than the background.
 
-| Token | Hex | Use |
-|---|---|---|
-| `--frame` | `#000000` | Outermost window background, around the app frame |
-| `--app` | `#0A0A0A` | The app canvas inside the frame |
-| `--panel` | `#141414` | Cards |
-| `--panel-raised` | `#1C1C1C` | Inner tiles, icon squares, hover background, inputs |
-| `--line` | `#262626` | All borders and dividers |
-| `--text` | `#F2F2F2` | Primary text, big numbers |
-| `--text-muted` | `#8F8F8F` | Labels, secondary text, axis text |
+| Token | Hex | Tailwind | Use |
+|---|---|---|---|
+| `--frame` | `#000000` | `bg-frame` | `body`: the window around the app frame |
+| `--app` | `#0A0A0A` | `bg-app` | The app canvas inside the frame; page-preview background |
+| `--panel` | `#141414` | `bg-panel` / `bg-card` | Cards; the icon square inside raised tiles |
+| `--panel-raised` | `#1C1C1C` | `bg-panel-raised` / `bg-muted` | Inner tiles, icon squares on cards, hover and selected rows, gap chips, skeletons |
+| `--line` | `#262626` | `border-line` / `border-border` | All borders and dividers |
+| `--text` | `#F2F2F2` | `text-foreground` | Primary text, big numbers |
+| `--text-muted` | `#8F8F8F` | `text-muted-foreground` | Labels, secondary text, the Idle dot |
 
 ### Data & accent
 | Token | Hex | Use |
 |---|---|---|
-| `--sage` | `#9CC5C4` | **Main data color**: bars, active nav pill, current bar, page views, active states, focus ring |
-| `--sage-dim` | `#5E7F7E` | Secondary data, inactive series, timeline line |
-| `--orange` | `#F2672E` | **Only** in the places listed under "Orange budget" |
-| `--up` | `#4CC38A` | Positive change |
-| `--down` | `#E5484D` | Negative change, errors |
+| `--sage` | `#9CC5C4` | **Main data color**: page-view dots, "Reached checkout" text, id link hover, focus ring (`--ring`). Planned: bars, current bar |
+| `--sage-dim` | `#5E7F7E` | The timeline's connecting line. Planned: secondary data |
+| `--orange` | `#F2672E` | **Only** where the orange budget allows (below) |
+| `--up` | `#4CC38A` | Planned: positive change |
+| `--down` | `#E5484D` | Error icon (`--destructive`). Planned: negative change |
 
 ### Event colors
-| Event | Color | Icon |
+| Event | Color | Where |
 |---|---|---|
-| Click | `--orange` | `MousePointerClick` |
-| Page view | `--sage` | `Eye` |
+| Click | `--orange` (`--event-click`) | Timeline dot, summary tile dot, preview click dot |
+| Page view | `--sage` (`--event-pageview`) | Timeline dot, summary tile dot |
 
 Clicks are the one data category drawn in orange, because a click is the event the product is about. This is the only exception to the orange budget, and it never applies to bars.
 
-### Heat ramp (heatmap and heat grid), cold → hot
+### Heat ramp (tokens Built, used by Planned heatmap/grid), cold → hot
 `--heat-0 transparent` → `--heat-1 #5E7F7E` → `--heat-2 #9CC5C4` → `--heat-3 #E8D58A` → `--heat-4 #F2672E`
 
 A cell's color is picked by `count / maxCount`. Zero is transparent, so only the cell's `--line` outline shows.
 
+### Glass tokens (Built)
+`--glass-top #262626`, `--glass-bottom #111111`, `--glass-edge` white 7%, `--glass-highlight` white 12%, `--glass-inner-shadow` black 60%, `--glass-drop` black 80%, `--glass-drop-soft` black 45%, `--glass-sheen` white 6%. See §5 "Glass controls".
+
 ### Orange budget
-Orange may appear only on:
-1. The logo mark.
-2. The primary button ("Open demo store", "Get started" in empty states). Its text is `--app` (dark), because white on orange fails contrast.
-3. The live dot.
-4. The single highlighted bar: at most one per chart, and only when one item must be called out (e.g. the peak). Charts don't need one by default.
-5. Click events (dots, timeline nodes, the click icon), as above.
+Orange appears only on:
+1. **The logo mark.**
+2. **The primary button**: "Open demo store" in the top bar and in empty and not-found states. The button text is `--app` (dark), because white on orange fails contrast.
+3. **The Live dot** (Idle is grey).
+4. **Click events**: timeline dots, the summary tile's Clicks dot, the preview's click dot.
+5. Planned: the single highlighted bar, at most one per chart.
 
 Anything else orange is a bug.
 
@@ -84,161 +98,303 @@ Because `--primary` is orange, components whose *default* variant is primary (Ba
 - `--app` text on `--orange`: 6.37:1.
 - White on orange is 3.11:1, which fails for body text, so it isn't used.
 
-## 3. Texture: diagonal hatch
+## 3. Texture: diagonal hatch (utility Built, not used yet)
 
-The signature texture is used on **bars and progress fills only**, and never as decoration (no hatched backgrounds, borders or empty areas).
+The `hatch` utility exists in `globals.css`. Planned use: **bars and progress fills only**, never as decoration.
 
 ```css
-/* utility: .hatch */
-background-image: repeating-linear-gradient(
-  45deg,
-  color-mix(in srgb, var(--sage) 35%, transparent) 0 1px,
-  transparent 1px 6px
-);
+@utility hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--sage) 35%, transparent) 0 1px,
+    transparent 1px 6px
+  );
+}
 ```
 
+Planned bar styles:
 - **Default bar:** hatch on a transparent background, with a 1px `--line` outline and the top corners rounded at 6px.
-- **Current bar** (today, the selected item): solid `--sage`, no hatch.
-- **Highlighted bar:** solid `--orange`, at most one per chart (see the orange budget).
-- **Horizontal bars** (Top pages): the same hatch, filling from the left.
+- **Current bar:** solid `--sage`.
+- **Highlighted bar:** solid `--orange`, at most one per chart.
+- **Horizontal bars:** the same hatch, filling from the left.
 
-## 4. Typography
+## 4. Typography (Built)
 
 | Role | Font | Spec |
 |---|---|---|
-| Everything | **Onest**, via `next/font/google` (self-hosted by Next at build time) | Weights 300, 400, 500 and 600. General Sans was dropped: its ITF Free Font License §02 forbids distributing the font files through a public repository. |
-| Session ids only | **Geist Mono** (already installed) | `text-xs`, nothing else is mono |
+| Everything | **Onest**, via `next/font/google` (self-hosted by Next at build time) | Weights 300, 400, 500, 600. General Sans was dropped: its ITF Free Font License §02 forbids distributing the font files through a public repository. |
+| Session ids only | **Geist Mono** (`geist` package) | Short ids in the table (`text-xs`), the full id in the journey summary and in tooltips. Nothing else is mono. |
 
-| Use | Spec |
+| Use | Spec in code |
 |---|---|
-| Big numbers | **300 weight**, 40–56px (`text-[40px] md:text-[56px]`), `tabular-nums`, `leading-none`. A small 400-weight unit or label sits next to the number (`text-sm text-muted-foreground`), e.g. `1,200` + `events`. |
-| Greeting | 300 weight, 32–40px; the second half ("Good evening") is in `--text-muted` |
-| Card title | 500 weight, 18px |
+| Greeting | `h1`, 300 weight, 32px (40px from `md`), tight tracking |
+| Big numbers, Overview tiles | 300 weight, 40px (48px from `md`), `tabular-nums`, `leading-none`. The label sits **above** the number, next to the icon square (`text-sm`, `--text-muted`). |
+| Big numbers, journey summary tiles | 300 weight, 32px, `tabular-nums`, `leading-none` |
+| Card title | 500 weight, 18px (`text-lg font-medium`) |
+| Logo text | 500 weight, 18px |
 | Body | 400, 14px |
-| Small labels, axis | 400, 12px, `--text-muted` |
+| Small labels, table footer, times | 12px, `--text-muted` |
 | Numbers in tables, times, coordinates | Onest with `tabular-nums` (not mono) |
 
 Rules:
 - **No all-caps labels anywhere.** No `uppercase` and no letter-spaced eyebrow labels.
-- **Sentence case** everywhere: "Top pages", not "Top Pages".
-- Long URLs: show the path only, with the full URL in a tooltip.
-- Session ids: the first 8 characters, in Geist Mono, with the full id in a tooltip.
+- **Sentence case** everywhere.
+- **URLs:** show the path only; the full URL goes in a `title` tooltip.
+- **Session ids:** the first 8 characters in Geist Mono, with the full id in a tooltip.
 
-## 5. Layout
+## 5. Layout (Built)
 
 ### Frame
-- The window background is `--frame`.
-- The app is one rounded container: `--app` background, **28px radius**, **16px gap** from the window edges, and a 1px `--line` border.
-- Content inside the frame: 24px padding on desktop, 12px below `md`.
+- `body` is `--frame` (pure black).
+- The app is one rounded container: `--app` background, **28px radius** (`rounded-frame`), **16px margin** from the window (`m-4`), 1px `--line` border, min-height = viewport − 32px.
+- Inside the frame: padding of 12px (24px from `md`), with a 24px gap between the top bar, the greeting and `main`. Inside `main`, sections are 16px apart.
 
-### Top bar (inside the frame)
-- **Left:** the logo (orange mark + "CausalFunnel").
-- **Center:** a **floating pill navbar**. It's a `--panel` pill with a `--line` border, containing Overview / Journeys / Heatmap.
-  - The active item sits on a `--panel-raised` pill that **slides** between items (motion `layoutId`).
-  - The active text is `--text`; the others are `--text-muted`.
-- **Right:**
-  - **Live dot:** a pulsing orange dot labelled "Live" when the newest event is less than 5 minutes old (read from the DB). Otherwise a static `--text-muted` dot labelled "Idle".
-  - The **"Open demo store"** primary button (a plain `<a href="/demo">`).
-- **Below `md`:** the logo and live dot stay on top; the pill navbar moves under them at full width (3 equal segments). There's no hamburger and no sidebar.
+### Radius tokens
+`rounded-icon` 10px · `rounded-tile` 16px · `rounded-card` 22px · `rounded-frame` 28px. Pills and buttons are `rounded-full`.
 
-### Greeting row
-- "Good evening" (morning, afternoon or evening by the viewer's local time) and today's date in a `--panel` pill on the right.
-- Both are computed **on the client** (server time and time zone are not the viewer's). The server HTML renders a neutral "Hello" and no date, and switches after hydration without a layout shift (the pill has a fixed width).
+### Top bar
+A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is logo + status and the nav takes a full-width second row.
+- **Logo:** a 28px orange rounded square with a 10px `--app` dot inside, plus "CausalFunnel" (18px/500). Links to `/dashboard`.
+- **Pill navbar** (centered): a `glass` pill, 4px padding, with Overview / Journeys / Heatmap (14px, 6×16px item padding).
+  - **Active item:** a `bg-panel-raised` + `glass-shine` pill behind it that **slides** between items (motion `layoutId="nav-pill"`, spring 0.25s, bounce 0.15). Text is `--text`.
+  - **Others:** `--text-muted`, turning `--text` on hover.
+  - **Heatmap:** disabled (`aria-disabled`, focusable, 60% muted, not-allowed cursor), with a "Soon" tooltip until Phase 4.
+  - **Below `md`:** full width, items split it equally.
+  - **Server fallback** (inside `<Suspense>`, because `usePathname` suspends on `[sessionId]`): the same bar with no active pill.
+- **Status** (right side):
+  - **Live/Idle pill:** `glass`, 36px tall. Shows an 8px dot and a label: orange "Live" when the newest event is under 5 minutes old (`getLastEventAt()`), otherwise a grey dot with muted "Idle". Hovering shows the newest event's ISO time. **No pulse** (Planned, Phase 5). While loading: a 36×80px skeleton pill. It updates only on full page loads or refreshes.
+  - **"Open demo store":** an orange primary pill button (36px tall, `glass-shine`), a plain `<a href="/demo">`. **Hidden below `sm`** (640px).
+- No sidebar, no hamburger, no sheet.
+
+### Greeting row (Built)
+- **Left:** `Hello` + `, good morning` / `, good afternoon` / `, good evening` in `--text-muted` (before 12, before 17, otherwise; the viewer's local clock).
+- **Right:** a **date pill** (`glass`, 36px tall, **fixed 128px wide**, 14px muted), e.g. `Tue, Oct 13`, using the browser's locale.
+- The server renders only `Hello` and an empty pill; the client fills both in after hydration (`useSyncExternalStore`). Fixed sizes mean nothing shifts.
 
 ### Cards
-- `--panel` background, 1px `--line` border, **22px radius**, 20px padding.
-- Header: an 18px/500 title on the left, an optional control on the right (a `--panel-raised` pill select or a round icon button).
-- Inner tiles: `--panel-raised`, 16px radius, 16px padding.
-- Icon square: 36px, `--panel-raised`, 10px radius, a 16px lucide icon in `--text`.
-- Hover (clickable cards and rows only): the background changes to `--panel-raised`. No lift, shadow or scale.
+- shadcn `Card`, restyled in `ui/card.tsx`: `--panel` background, 1px `--line` border, **22px radius**, **20px padding**, 16px gap between children, **no shadow**.
+- **Card title:** 18px/500, with an optional 14px muted description below it.
+- **Inner tiles:** `--panel-raised`, 16px radius, 16px padding.
+- **Icon squares:**
+  - on cards and in states: 36px, 10px radius, `--panel-raised`
+  - inside raised tiles: `--panel`
+  - always a 16px lucide icon in `--text` (`--down` for the error icon)
+- **Hover (clickable rows only):** the background changes to `--panel-raised`. No lift, shadow or scale.
 
-### Glass controls
-Glossy charcoal glass, from the user's reference (dark pill buttons with a bevel and a sheen), is used on **controls only**:
+### Glass controls (Built)
+Glossy charcoal glass (from the user's reference) is used on **controls only**:
 - the pill navbar and its active pill
 - the Live/Idle pill and the date pill
 - buttons
-- chips and status pills
-- the Phase 4 heatmap toolbar
+- the "Pages visited" chips and the status pills
+- Planned: the Phase 4 heatmap toolbar
 
 **Never on cards, the frame, or anything behind data.**
 
-It's built from two utilities in `globals.css`, using the tokens `--glass-*`:
-- `glass`:
-  - a top-to-bottom gradient `--glass-top #262626` → `--glass-bottom #111111`
-  - a faint 115° sheen band
+There are two utilities in `globals.css`:
+- **`glass`:**
+  - a top-to-bottom gradient `--glass-top` → `--glass-bottom`
+  - a 115° sheen band (white 6%, sharp edge at 30%)
   - a 1px edge at white 7%
-  - an inset top highlight (white 12%) and an inset bottom shadow
-  - a soft drop shadow
-- `glass-shine`: the same sheen, bevel and shadow over an existing background color. Used for the orange primary button and the active nav pill.
+  - an inset top highlight (white 12%) and an inset bottom shadow (black 60%)
+  - a drop shadow of `0 1px 2px` black 80% plus `0 6px 16px` black 45%
+- **`glass-shine`:** the same sheen, bevel and shadow over an existing background color.
 
-There's no `backdrop-filter` blur: on a flat black background there's nothing behind the control to blur. Glass controls are the only elements with shadows; cards stay flat with a 1px border.
+No `backdrop-filter`. Glass controls are the only elements with shadows.
+
+### Buttons (`ui/button.tsx`)
+- **Default (primary):** orange, `glass-shine`, dark text; hover is orange at 90%.
+- **Outline:** `glass`, `--text`; hover is `brightness-125`.
+- All buttons in the app are `rounded-full`. There's no transition (it was removed from the shadcn base).
 
 ### Chips & pills
-- **Chip** (page path, filter): `glass`, full radius, 12px text, 4×10px padding.
-- **Change pill:**
-  - `↑ 12%` in `--up` or `↓ 8%` in `--down`, on that color at 12% opacity.
-  - **"New this week"** in `--text-muted` when the previous period has no data.
-  - **"No change"** when the values are equal.
-- **Status pill** (Recent journeys):
-  - "Reached checkout": `glass` with `--sage` text.
-  - "Browsing": `glass` with `--text-muted` text.
+- **Page chip** ("Pages visited"): `glass`, full radius, 12px text, 4×10px padding.
+- **Status pill** (Journeys table): `glass`, 12px text, 2×10px padding.
+  - "Reached checkout": `--sage` text (any event on a page ending `/checkout.html`).
+  - "Browsing": `--text-muted` text.
+- **Gap chip** (timeline, e.g. `+11s`): `--panel-raised`, **not glass**, 11px muted `tabular-nums`.
+- **Change pill:** Planned (Step B).
+  - `↑ 12%` in `--up` or `↓ 8%` in `--down`, on that color at 12%.
+  - "New this week" when the previous period is empty.
+  - "No change" when the values are equal.
 
-## 6. Overview (bento)
+### Tooltips
+`ui/tooltip.tsx`: a light tooltip (`--text` background, `--app` text), 12px, `rounded-md`, with **no animation** (the shadcn fade and zoom were removed).
 
-Desktop: a **12-column grid, 16px gap**. Every number comes from the services in ARCHITECTURE.md §4.1.
+## 6. Overview
+
+### Built (Phase 3.5 Step A)
+- A 12-column grid (1 column below `lg`), 16px gap.
+- **"Totals" card** (`lg:col-span-4`): 2×2 raised tiles with a 12px gap: **Sessions, Events, Clicks, Pages tracked**. These are **all-time** totals from `getOverviewStats()`.
+  - Each tile: an icon square (`--panel`) + a muted label on one row, then the big number.
+  - No change pills.
+- **Empty database:** an empty-state card across the whole grid: "No events yet", a sentence, and "Open demo store".
+- **Loading:** a skeleton of the same card (title bar + 4 tiles, no numbers).
+
+### Planned (Step B), the bento
+Desktop is a 12-column grid with a 16px gap. Every number comes from the services in ARCHITECTURE.md §4.1.
 
 | Position | Card | Content |
 |---|---|---|
-| Left, span 4, tall (2 rows) | **Activity this week** | One sentence: "**{n}%** more/less than last week" (`n` from this week's vs last week's events; "New this week" if last week = 0). 7 vertical **hatched** bars, one per day, oldest → today, with weekday labels below. **Today's bar is solid sage** with a value pill above it (its event count). |
-| Middle top, span 4 | **2×2 tiles** | Sessions, Events, Clicks and Pages tracked. Each tile has an icon square, a big 300-weight number, and a change pill vs the previous 7 days (see Chips). |
-| Middle bottom, span 4 | **Top pages** | Up to 5 pages by clicks. Each row: the path in a chip, a horizontal **hatched** bar sized by `clicks / maxClicks`, and the count. |
-| Right, span 4, tall | **Heatmap preview** + **Latest journey** | **Top:** a scaled iframe of the most-clicked page (`?cf_preview=1`) with its desktop (≥768px) click dots overlaid, the page path as the title, and an "Open heatmap" button. **Below:** the newest session's last 8 steps as a vertical timeline (dots joined by a `--sage-dim` line; click dots orange, page-view dots sage), the path on the left and the local time on the right, plus a "View journey" link. |
-| Bottom, span 8 | **Clicks by day and hour** | Heat grid: **7 rows** (Mon–Sun) × **12 columns** (2-hour buckets, 00–02 … 22–24), in the viewer's time zone, over the last 28 days. Cells use the heat ramp; a small legend shows the ramp with the real min and max counts. |
-| Bottom, span 4 | **Recent journeys** | The newest 5 sessions: short id (mono), events, status pill ("Reached checkout" if any `page_url` ends with `/checkout.html`, else "Browsing"), last seen (relative). The row links to the journey. |
+| Left, span 4, tall | **Activity this week** | "**{n}%** more/less than last week" ("New this week" if last week = 0). 7 vertical hatched bars, oldest → today; **today's bar is solid sage** with a value pill. |
+| Middle top, span 4 | **2×2 tiles** | Sessions, Events, Clicks, Pages, with change pills vs the previous 7 days. |
+| Middle bottom, span 4 | **Top pages** | Up to 5 pages by clicks: path chip, horizontal hatched bar, count. |
+| Right, span 4, tall | **Heatmap preview** + **Latest journey** | A scaled iframe of the most-clicked page (`?cf_preview=1`) with desktop click dots, plus "Open heatmap". Below it, the newest session's last 8 steps as a timeline, plus "View journey". |
+| Bottom, span 8 | **Clicks by day and hour** | Heat grid, 7 rows (Mon–Sun) × 12 two-hour columns, in the viewer's time zone, over the last 28 days, with a legend of real min and max counts. |
+| Bottom, span 4 | **Recent journeys** | The newest 5 sessions: short id, events, status pill, last seen. |
 
-**Mobile (below `md`)**: a single column, in this order:
+**Mobile order:**
 1. tiles
 2. activity
 3. heatmap preview
 4. latest journey
 5. top pages
-6. heat grid (scrolls horizontally inside its card, with the weekday labels sticky)
+6. heat grid (scrolls inside its card)
 7. recent journeys
 
-**Empty database:** the bento is replaced by one large card: an icon, "No events yet", one sentence, and the "Open demo store" button. No zero-filled charts.
+**Empty database:** one large empty-state card; no zero-filled charts.
 
 ## 7. Other pages
 
-All of them use the same frame, cards and texture.
+### Journeys `/dashboard/journeys` (Built)
+- **One card:** title "Journeys" + "Every visitor session, most recent activity first."
+- **Table columns:**
+  - **Journey:** 8-char Geist Mono id, `text-xs`; a link that turns sage on hover; tooltip with the full id.
+  - **Events, Clicks, Pages:** right-aligned `tabular-nums`; **hidden below `sm`**.
+  - **Status:** the glass status pill.
+  - **Last seen:** right-aligned, muted. From `sm` up it's the long form ("4 minutes ago"); below `sm` it's the narrow form ("4m ago"). Hover shows the ISO time.
+- **Below `sm`** only **Journey, Status, Last seen** show, and the table fits 375px with no scrolling (`overflow-x-auto` is only a fallback).
+- **Rows:** the whole row is clickable, with a `--line` divider and `--panel-raised` hover.
+- **Footer:** "N journeys shown" (12px muted) on the left; an outline glass **"Load more"** on the right, hidden when there's no next page. If loading fails, a sonner toast says "Could not load more journeys".
+- **Empty:** an empty state inside the card (no border or background of its own): "No journeys yet" + "Open demo store".
+- The URL `/dashboard/sessions` no longer exists (no redirect).
 
-- **Journeys** (`/dashboard/journeys`): one large card with the sessions table. Same columns as Recent journeys, plus clicks and pages (hidden below `sm`). "Load more" button at the bottom.
-- **Journey detail** (`/dashboard/journeys/[sessionId]`):
-  - **Left (span 5):** the summary tiles (duration, events, clicks, page views) above the timeline card, in the same style as Latest journey but with every step and "+12s" gap chips.
-  - **Right (span 7):** a large page preview card showing the page of the selected step (default: the first), with that step's click dot if it's a click. Clicking a step selects it.
-  - **Mobile:** timeline first, then the preview.
-- **Heatmap** (`/dashboard/heatmap`):
-  - A large preview card: the scaled iframe of the selected page with the dots or grid overlay.
-  - A **floating pill toolbar** on top of the card: page select, Dots / Grid, Desktop / Mobile.
-  - A **replay scrubber** at the bottom of the card: a play/pause button, a range slider over the click time span, and the current time. Moving it shows only the clicks up to that moment.
-  - A legend with the ramp and real counts.
+### Journey detail `/dashboard/journeys/[sessionId]` (Built)
+- **Top:** a muted "← All journeys" link.
+- **Grid:** 12 columns from `lg` (1 column below it): left `col-span-5`, right `col-span-7`. Below `lg` the order is summary, timeline, preview.
+- **"Journey summary" card** (left):
+  - the full session id (Geist Mono, 12px, muted, wraps)
+  - "Started <local date and time>"
+  - 2×2 raised tiles: Duration, Events, Clicks (orange dot), Page views (sage dot), with 32px light numbers
+  - "Pages visited (n)" with glass page chips
+- **"Journey" card** (left): a vertical timeline of every event. Each step is a full-width button (`rounded-tile`, 8×4px padding):
+  - a 10px dot (orange for clicks, sage for page views) joined to the next by a 1px `--sage-dim` line
+  - the label ("Page view" / "Click", 14px)
+  - the path (12px muted, truncated, full URL in a tooltip)
+  - for clicks, `x 520, y 333 · 1536×776` (12px muted)
+  - the local time on the right
+  - a gap chip (`+11s`) between steps
+  - the selected step has a `--panel-raised` background; the first step is selected by default.
+- **Page preview card** (right; sticky at `top-4` from `lg`):
+  - **Header:** the page path as the title (18px/500, truncated) and the render size `W×H` (12px muted).
+  - **Body:** a scroll box (`rounded-tile`, `--line` border, `--app` background, max height 70vh) holding an iframe of `page_url?cf_preview=1`, scaled to the card width.
+    - **For a click:** rendered at the click's own `viewport_w × page_h`, with a 14px orange dot (2px `--app` ring) at the click position. The box scrolls to the dot.
+    - **For a page view:** 1280×800.
+  - **iframe:** `sandbox="allow-scripts"` (no `allow-same-origin`), `referrerPolicy="no-referrer"`, `pointer-events-none`, lazy-loaded.
+- **Not found** (unknown or malformed id): a card with "Journey not found", a sentence, an outline "Back to journeys" and an orange "Open demo store".
 
-## 8. States
+### Heatmap `/dashboard/heatmap` (Planned, Phase 4)
+- A large preview card with the scaled iframe and a dots or grid overlay.
+- A floating **glass** pill toolbar on top: page select, Dots / Grid, Desktop / Mobile.
+- A **replay scrubber** at the bottom: play/pause, a range slider over the click time span, and the current time.
+- A legend with the ramp and real counts.
 
-Every data card has all three states:
-- **Loading:** a skeleton in the card's real shape (bars, tiles, rows). Skeletons show no numbers.
-- **Empty:** an icon, one sentence, and the "Open demo store" button.
-- **Error:** a sentence plus "Try again" (`retry()`); the frame and navbar stay visible.
+## 8. States (Built)
 
-## 9. Motion (only these)
+- **Loading:** shadcn `Skeleton` blocks (`--panel-raised`, with shadcn's default `animate-pulse`) in the shape of the real content (totals tiles, table rows, summary + timeline + preview). They show no numbers.
+- **Empty:** a card with a 36px icon square, a title (18px/500), one muted sentence, and the orange **"Open demo store"** pill (a plain `<a href="/demo">`).
+- **Error:** `error.tsx` in each route segment renders a card with a `--down` warning icon, "Something went wrong", a sentence, an optional "Ref: <digest>", and an outline glass **"Try again"** (`retry()`). The frame and navbar stay visible.
 
+## 9. Motion
+
+### Built
+| What | Where | Spec |
+|---|---|---|
+| Nav active pill slides | `pill-nav.tsx` (motion) | `layoutId`, spring 0.25s, bounce 0.15, `MotionConfig reducedMotion="user"` |
+| Skeleton pulse | `ui/skeleton.tsx` (shadcn default) | `animate-pulse` while loading |
+| Table row hover | `ui/table.tsx` (shadcn default) | `transition-colors` on the row background |
+| Toasts | sonner (library default) | slide-in; the loading icon spins |
+
+All other hover changes are instant: the transitions were removed from buttons, the tooltip, the nav items and the timeline.
+
+### Planned
 | What | Library | Spec |
 |---|---|---|
 | Big numbers count up | anime.js | once on first load, 600ms, `outExpo` |
-| Bars grow from 0 | anime.js | once on first load, height or width from 0, **40ms stagger**, ≤ 600ms each |
-| Nav active pill slides | motion | `layoutId`, spring, ~250ms |
-| Heatmap dots on replay | anime.js | dots appear in timestamp order, total ≤ 800ms (or following the scrubber) |
-| Live dot | CSS | a slow pulse, only while "Live" |
+| Bars grow from 0 | anime.js | once, 40ms stagger, ≤ 600ms each |
+| Heatmap dots on replay | anime.js | in timestamp order, ≤ 800ms total (or following the scrubber) |
+| Live dot pulse | CSS | slow, only while "Live" |
 
-- **Nothing else moves.** No page transitions, no hover lift or scale, no row stagger.
-- Hover = a subtle background change only.
-- **Reduced motion:** with `prefers-reduced-motion: reduce`, everything renders in its final state immediately (JS animations check `matchMedia`; CSS is already globally disabled), and the live dot doesn't pulse.
+- No page transitions, no hover lift or scale, no row stagger.
+- **Reduced motion:** the global CSS in `globals.css` cuts all CSS animations and transitions to ~0 under `prefers-reduced-motion: reduce`; the nav pill follows the user setting via `MotionConfig`. Planned JS animations must check `matchMedia` and render their final state.
+
+## 10. Demo store "Northwind" (Built)
+
+`public/demo/*.html` + `public/demo/store.css`. A **light**, Amazon-style marketplace with its **own brand** (no Amazon name, logo, colors or partner banners). It's a separate site: the dashboard tokens, orange budget, glass and "no hex" rules don't apply here.
+
+### Rules
+- **Static:** no JavaScript except `tracker.js`. No carousels or randomized sections, so heatmap positions are stable.
+- **Images:** every image is a CSS `background-image` on a fixed-size box (`.img`, with `aspect-ratio` or a fixed height). There are **no `<img>` elements**, so layout is identical before and after images load (verified with Playwright: 0 element boxes move). Missing images show a light tile.
+  - The files live in `public/demo/img/` (free Unsplash License photos, credited in `img/CREDITS.md`).
+- **Tests and screenshots must use `?cf_preview=1`** on demo URLs so the tracker sends nothing.
+
+### Palette (`store.css` `:root`)
+| Var | Hex | Use |
+|---|---|---|
+| `--ink` | `#0F1111` | Top header, footer base, body text |
+| `--ink-2` | `#1F2A2A` | Category strip, footer |
+| `--page` | `#E9ECEC` | Page background |
+| `--card` | `#FFFFFF` | Cards, product tiles |
+| `--line` | `#D5D9D9` | Borders |
+| `--muted` | `#565959` | Secondary text |
+| `--teal` / `--teal-dark` | `#14B8A6` / `#0F8F82` | Search button, primary buttons, focus ring, logo dot |
+| `--gold` | `#F5A623` | Stars; secondary buttons ("Shop the sale", "Sign in securely", "Add to Cart", "Place your order") |
+| `--coral` | `#F05A4F` | Discount badges |
+| `--link` | `#007185` | Text links ("See all deals", ratings count) |
+
+The back-to-top bar is `#37474F`. Image placeholder tiles: `#F3F4F4` (cover) and `#F7F8F8` (contain).
+
+### Type and shape
+- **Fonts:** system UI stack, 14px base. The logo "northwind" is 24px/800, followed by a teal dot and ".in".
+- **Card radius:** 8px. Buttons are fully rounded.
+
+### Pages
+- **Header** (shared), 64px, `--ink`:
+  - logo, then "Deliver to Noida 201301 / Update location"
+  - a search bar: category select + input + teal button, 42px tall, 8px radius
+  - "Hello, sign in / Account & Lists", "Returns & Orders", and a cart with a teal count
+  - then a 40px **category strip** (`--ink-2`): "☰ All", Fresh, Today's Deals, …, Customer Service; it scrolls sideways when narrow.
+- **`/demo`:**
+  - a 420px hero (`hero.jpg`, teal → gold gradient behind it) with "The Festive Edit is live", a sentence and a gold "Shop the sale"; it fades into the page
+  - **4 deal cards** overlapping the hero by 170px: Trending deals, Under ₹299, Up to 60% off | Self-care & home, and Sign in. Each holds a 2×2 image grid and a "See …" link.
+  - a "Best sellers in Sports & Outdoors" row that scrolls inside its card
+  - "Back to top" and the footer
+- **`/demo/products.html`:**
+  - a white results bar ("1-9 of 9 results…", Sort select)
+  - a 240px filter sidebar (category, reviews, price, delivery checkboxes) and a grid of 9 product cards, at least 230px each
+  - each card: image, title, stars + count, coral % badge, price, struck-through M.R.P., delivery line, teal "Add to cart"
+- **`/demo/product.html`:** used for every product; `?id` is ignored by the analytics.
+  - breadcrumbs
+  - a gallery: 3 thumbnails + the main image
+  - info: title, store link, rating, badge + price, M.R.P., 3 offer boxes, "About this item", a review quote
+  - a sticky buy box: price, delivery, "In stock", quantity, gold "Add to Cart", teal "Buy Now" → checkout
+- **`/demo/checkout.html`:**
+  - a simplified white header: logo, "Checkout", a lock icon
+  - 3 steps: address form, delivery speed radios, payment (no card fields)
+  - a sticky order summary: gold "Place your order", 2 items, totals
+- **Footer** (shared): 4 link columns on `--ink-2`, and a base line "© Northwind — a demo store for CausalFunnel analytics. Not a real shop."
+
+### Breakpoints
+- **≤1100px:** deal cards in 2 columns; the product page's buy box moves under the details.
+- **≤860px:**
+  - the header wraps and the search bar gets its own full-width row
+  - "Deliver to", "Account" and "Returns" are hidden
+  - the hero drops to 300px and the deal cards overlap by 110px
+  - the filters become a wrapped card above the grid
+  - checkout goes to one column
+  - the footer goes to 2 columns
+- **≤600px:**
+  - deal cards in 1 column
+  - the product grid in 2 columns
+  - the product page in one column, with thumbnails in a row under the main image
+- No page scrolls sideways at 375px or at 1280px.

@@ -29,19 +29,22 @@ These are hard rules for anyone (human or AI) writing code in this repo. When a 
 
 ## 3. UI & animation rules
 
-DESIGN.md is the spec; these are the rules that are easy to break.
+DESIGN.md describes the UI **as it is in the code** (sections marked Built / Planned). These are the rules that are easy to break.
 
-- **Honesty rule.** Every number shown must come from the database. No placeholder, decorative or example numbers, including in empty states, legends and skeletons.
-- **Hatch texture.** Bars and progress fills use the 45° diagonal hatch (`.hatch`: 1px sage lines at 35% opacity every 6px). The current/selected bar is solid sage. Never use the hatch as decoration (backgrounds, borders, empty areas).
-- **Orange only in these places:** the logo mark, the primary button, the live dot, the single highlighted bar (at most one per chart), and click events (dots, timeline nodes, the click icon). Anything else orange is a bug. shadcn variants that default to `primary` (orange) must be given a non-primary variant.
-- **Glass on controls only.** The `glass` / `glass-shine` utilities go on the nav, pills, buttons and chips; never on cards, the frame, or behind data. No `backdrop-filter`. Cards stay flat (1px border, no shadow).
+- **Don't redesign by accident.** The dashboard is deep black (`--frame #000`, `--app #0A0A0A`) with charcoal surfaces and glass controls; the demo store is a light Amazon-style "Northwind" site. Never change colors, layout, spacing, fonts, copy or styling unless the user asks. If code and DESIGN.md disagree, update the doc or ask; don't "fix" the code back to an older spec.
+- **Honesty rule.** Every number shown in the dashboard must come from the database. No placeholder, decorative or example numbers, including in empty states, legends and skeletons.
+- **Hatch texture** (utility exists, not used yet). Bars and progress fills use the 45° diagonal hatch (`hatch`: 1px sage lines at 35% opacity every 6px). The current/selected bar is solid sage. Never use the hatch as decoration.
+- **Orange only in these places:** the logo mark, the primary button ("Open demo store"), the Live dot, click events (dots, timeline nodes, the click icon), and (Planned) a single highlighted bar per chart. Anything else orange is a bug. shadcn variants that default to `primary` (orange) must be given a non-primary variant.
+- **Glass on controls only.** The `glass` / `glass-shine` utilities go on the nav, the Live and date pills, buttons, page chips and status pills; never on cards, the frame, or behind data. No `backdrop-filter`. Cards stay flat (1px border, no shadow). Timeline gap chips are plain `bg-panel-raised`, not glass.
 - **No all-caps.** No `uppercase` class or letter-spaced eyebrow labels. Sentence case everywhere.
 - **Mono only for session ids** (Geist Mono). Other numbers use Onest with `tabular-nums`.
-- **Motion budget:** only the four motions in DESIGN.md §9 (count-up, bar grow, nav pill slide, heatmap replay) plus the live-dot pulse. Hover = subtle background change only. Nothing else animates.
-- Respect `prefers-reduced-motion`: JS animations check `window.matchMedia` and render the final state; CSS is disabled globally.
-- Colors come from CSS variables in `globals.css`. **No hex codes in components.**
+- **Motion budget.** Built: the nav pill slide (motion), plus shadcn/sonner defaults that are kept as-is (skeleton `animate-pulse`, table-row `transition-colors`, sonner toasts). Planned: count-up, bar grow, heatmap replay, live-dot pulse (DESIGN.md §9). Nothing else animates; other hovers are instant (no `transition-*` on buttons, tooltip, nav or timeline).
+- Respect `prefers-reduced-motion`: CSS animations and transitions are cut globally; motion uses `MotionConfig reducedMotion="user"`; future JS animations must check `window.matchMedia` and render the final state.
+- Colors come from CSS variables in `globals.css`. **No hex codes in dashboard components.**
 - Every data card has three states: **loading** (skeleton in the card's shape), **empty** (message + "Open demo store"), **error** (message + retry).
-- Mobile works at 375px: the bento becomes a single column in the order given in DESIGN.md §6; wide content scrolls inside its card, never the page.
+- Mobile works at 375px with no page-level horizontal scroll. Journeys table below `sm`: only id, status, narrow "last seen". The planned bento becomes a single column in the DESIGN.md §6 order; wide content scrolls inside its card, never the page.
+- **Demo store (`public/demo`)** has its own design, defined in `store.css` (DESIGN.md §10); dashboard rules (tokens, glass, orange budget, no hex) don't apply there. Keep it static (no JS except `tracker.js`), keep every image a CSS background on a fixed-size box (no `<img>`, so layout never shifts), and credit every photo in `img/CREDITS.md` (Unsplash/Pexels license only).
+- **Automated visits to demo pages** (Playwright, screenshots, scripts) must add `?cf_preview=1` so the tracker sends nothing.
 
 ## 4. Code rules
 
