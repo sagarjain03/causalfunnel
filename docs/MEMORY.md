@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** 2 complete → Phase 3 next
+- **Phase:** 3 code complete → user runs the manual checklist, then ticks Phase 3 "Done when"
 - **Working on (file):** none
-- **Next step:** Phase 3, task 1 — `npx shadcn@latest add …`. Carry over Phase 2 task 3: the dashboard empty states must link to `/demo`.
+- **Next step:** Phase 4, task 1 — the heatmap page selector (`/dashboard/heatmap`). Enable the "Heatmap" nav item in `src/components/dashboard/nav-links.tsx` (currently disabled with a "Soon" badge).
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -19,6 +19,12 @@
   - `public/tracker.js` (3.6 KB raw / 1.6 KB gzip), `public/demo/{index,products,checkout}.html` (Northwind demo store), a `/demo` → `/demo/index.html` rewrite in `next.config.ts`, an ESLint override for `tracker.js`.
   - Verified in Playwright: page_view + clicks stored; the capture listener still records clicks when host code calls `stopPropagation`; query/hash history changes don't create page views; loading the script twice doesn't double-count; `?cf_preview=1` disables tracking; 0 console errors or warnings.
   - Task 3 (link to `/demo` from the dashboard empty states) is deferred to Phase 3, because the dashboard doesn't exist yet.
+- [2026-10-13] Phase 3 code (uncommitted):
+  - shadcn: button card table badge skeleton select tabs tooltip separator sonner scroll-area sheet (`sheet` added for the mobile nav).
+  - Dashboard shell (`app/dashboard/layout.tsx`, sidebar, mobile sheet nav), overview with 4 stat cards, sessions table with Load more, session journey (summary + timeline), `error.tsx` in each segment, `[sessionId]/not-found.tsx`, `/` → `/dashboard`.
+  - Carried-over Phase 2 task 3 is done: every empty state links to `/demo`.
+  - `tsc`, `lint`, `build` pass; the 3 dashboard routes build as ◐ (static shell + streamed data). Playwright checks: stats and the table match the API; a row click opens the journey; unknown and malformed ids show not-found; at 375px there's no overflow and the sheet nav works; 0 console errors.
+  - Not yet seen in a browser: "Load more" (the DB has 7 sessions, fewer than 50).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -38,6 +44,15 @@
 - Demo links always use `/demo` (never `/demo/index.html`), so the home page is one heatmap page, not two.
 - Demo pages use DESIGN.md hex values as CSS variables in an inline `<style>`; the "no hex in components" rule applies to `src/`.
 - `tracker.js` is ES2017 (no optional catch binding), so ESLint's `caughtErrors` check is off for that file only.
+- **Cache Components pattern for dashboard pages:** the page component is sync (heading in the static shell); the data part is an async component in `src/components/**` behind `<Suspense fallback={Skeleton}>` that calls `await connection()` **before** any DB read. This applies even on `[sessionId]`: `await params` alone doesn't stop prerendering in dev (the param value is known), and mongoose then hits `new Date()` during the prerender.
+- No `loading.tsx` files (deviation from PHASES' wording): the Suspense fallbacks are the loading state and keep the headings in the static shell.
+- `usePathname` suspends on `[sessionId]` under Cache Components, so `ActiveNavLinks` is always inside `<Suspense fallback={<NavLinks pathname={null} />}>`.
+- `notFound()` on the session page runs after streaming starts, so the HTML status is 200 + `noindex` (documented Next behaviour). The API (`/api/sessions/<id>/events`) still returns a real 404.
+- shadcn's generated components imported `cn` from a new `cn` npm package; they're repointed to `@/lib/utils` (RULES §1), and `cn` was uninstalled. `ui/sonner.tsx` uses `theme="dark"`, so `next-themes` was uninstalled too. `globals.css` was not touched by shadcn.
+- Links to `/demo` use a plain `<a>`, never `next/link`: it's a static file behind a rewrite, not an app route.
+- Times in the UI: `<LocalTime>` (client) renders a labelled UTC time on the server and switches to the browser's local time after hydration (`useSyncExternalStore`). Relative "x ago" times use `fetchedAt` from the data loader, so server and client match.
+- Load more: the client calls `GET /api/sessions?cursor=`; failures show a sonner toast and keep the existing rows. The response is typed with the shared `SessionsPage` type (our own API), not zod-parsed, to keep zod out of the client bundle.
+- Sessions table at <640px hides Clicks and Pages (`hidden sm:table-cell`); `overflow-x-auto` is only a fallback.
 - Smoke test data persists in the DB under `https://smoke.example/<runId>/…` (there's no delete endpoint).
 
 ## Known issues / TODO
