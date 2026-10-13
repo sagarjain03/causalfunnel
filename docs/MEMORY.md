@@ -43,4 +43,5 @@
 ## Known issues / TODO
 - Smoke test data (`smoke.example` URLs) stays in the DB and will appear in the dashboard; needs a cleanup script or separate test DB in Phase 6.
 - The Atlas password was once in `.env.example` (never committed; it now holds placeholders). Rotate it before deploying.
+- All manual test clicks so far were made with DevTools docked, at `viewport_w` ≈ 618px, so they fall in the mobile (<768px) bucket. An empty Desktop heatmap in Phase 4 is expected until desktop-width clicks are generated. This is not a bug.
 - The build warns about a stray `D:\pnpm-lock.yaml` outside the repo (harmless; delete it or set `turbopack.root`).
