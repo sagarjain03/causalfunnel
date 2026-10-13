@@ -7,9 +7,9 @@ These are hard rules for anyone (human or AI) writing code in this repo. When a 
 | Need | Use | Notes |
 |---|---|---|
 | Primitives (button, table, select, card, badge, tabs, tooltip, sheet, skeleton, sonner) | **shadcn/ui** | `npx shadcn@latest add <name>`. Lives in `src/components/ui`. |
-| Hero / background effects | **Aceternity UI** | Copy into `src/components/aceternity/`. Max 2–3 components total. |
-| Component & layout animation | **motion** | `import { motion } from "motion/react"`. |
-| Heatmap dot reveal, number count-up | **anime.js v4** | `import { animate, stagger } from "animejs"` (named exports, v4 API). |
+| Fonts | **General Sans** via `next/font/local` (files in `src/app/fonts/`), **Geist Mono** for session ids only | No other fonts. |
+| Nav pill slide | **motion** | `import { motion } from "motion/react"`. Only for the navbar `layoutId` pill. |
+| Number count-up, bar grow, heatmap replay | **anime.js v4** | `import { animate, stagger } from "animejs"` (named exports, v4 API). |
 | Icons | **lucide-react** | Nothing else. |
 | Validation | **zod** v4 | Every API input. |
 | DB | **mongoose** | Through `src/server/db.ts` only. |
@@ -29,13 +29,18 @@ These are hard rules for anyone (human or AI) writing code in this repo. When a 
 
 ## 3. UI & animation rules
 
-- **Data must be readable first.** No animated backgrounds, beams, or sparkles behind tables, timelines, or the heatmap. Aceternity effects only on the overview header and empty states.
-- `motion` = enter/exit, layout, hover. `anime.js` = heatmap dots stagger + stat counters. Do not use both on the same element.
-- Durations: 150–300ms for UI, max 800ms for any reveal. No infinite animations except a "live" pulse dot.
-- Respect `prefers-reduced-motion` (global CSS already does; for JS animations check `window.matchMedia`).
+DESIGN.md is the spec; these are the rules that are easy to break.
+
+- **Honesty rule.** Every number shown must come from the database. No placeholder, decorative or example numbers, including in empty states, legends and skeletons.
+- **Hatch texture.** Bars and progress fills use the 45° diagonal hatch (`.hatch`: 1px sage lines at 35% opacity every 6px). The current/selected bar is solid sage. Never use the hatch as decoration (backgrounds, borders, empty areas).
+- **Orange only in these places:** the logo mark, the primary button, the live dot, the single highlighted bar (at most one per chart), and click events (dots, timeline nodes, the click icon). Anything else orange is a bug. shadcn variants that default to `primary` (orange) must be given a non-primary variant.
+- **No all-caps.** No `uppercase` class or letter-spaced eyebrow labels. Sentence case everywhere.
+- **Mono only for session ids** (Geist Mono). Other numbers use General Sans with `tabular-nums`.
+- **Motion budget:** only the four motions in DESIGN.md §9 (count-up, bar grow, nav pill slide, heatmap replay) plus the live-dot pulse. Hover = subtle background change only. Nothing else animates.
+- Respect `prefers-reduced-motion`: JS animations check `window.matchMedia` and render the final state; CSS is disabled globally.
 - Colors come from CSS variables in `globals.css`. **No hex codes in components.**
-- Every list/table has three states: **loading** (Skeleton), **empty** (message + hint to open `/demo`), **error** (message + retry).
-- Mobile works at 375px. Tables become cards or scroll horizontally inside their container.
+- Every data card has three states: **loading** (skeleton in the card's shape), **empty** (message + "Open demo store"), **error** (message + retry).
+- Mobile works at 375px: the bento becomes a single column in the order given in DESIGN.md §6; wide content scrolls inside its card, never the page.
 
 ## 4. Code rules
 

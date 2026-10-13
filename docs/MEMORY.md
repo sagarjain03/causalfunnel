@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** 3 code complete → user runs the manual checklist, then ticks Phase 3 "Done when"
+- **Phase:** 3 code complete (its "Done when" boxes are still unticked: the user hasn't confirmed the manual checklist) → **Phase 3.5 — Redesign** next (docs written, no code yet)
 - **Working on (file):** none
-- **Next step:** Phase 4, task 1 — the heatmap page selector (`/dashboard/heatmap`). Enable the "Heatmap" nav item in `src/components/dashboard/nav-links.tsx` (currently disabled with a "Soon" badge).
+- **Next step:** Phase 3.5, task 1 — download General Sans (300/400/500/600) into `src/app/fonts/` and load it with `next/font/local`.
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -25,6 +25,7 @@
   - Carried-over Phase 2 task 3 is done: every empty state links to `/demo`.
   - `tsc`, `lint`, `build` pass; the 3 dashboard routes build as ◐ (static shell + streamed data). Playwright checks: stats and the table match the API; a row click opens the journey; unknown and malformed ids show not-found; at 375px there's no overflow and the sheet nav works; 0 console errors.
   - Not yet seen in a browser: "Load more" (the DB has 7 sessions, fewer than 50).
+- [2026-10-13] Redesign spec (docs only): rewrote `DESIGN.md` ("Bento on dark"), RULES §1/§3, ARCHITECTURE (§4.1 Overview services, folder tree), PHASES (new Phase 3.5; Phase 4 adds the replay scrubber; Phase 5 trimmed to the DESIGN §9 motion list). All Aceternity mentions removed.
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -44,6 +45,13 @@
 - Demo links always use `/demo` (never `/demo/index.html`), so the home page is one heatmap page, not two.
 - Demo pages use DESIGN.md hex values as CSS variables in an inline `<style>`; the "no hex in components" rule applies to `src/`.
 - `tracker.js` is ES2017 (no optional catch binding), so ESLint's `caughtErrors` check is off for that file only.
+- **Redesign (2026-10-13):** the user rejected the first dashboard UI as generic. New direction from a reference they like: a dark bento dashboard (rounded app frame, floating pill navbar, mixed-size cards, diagonal hatch-pattern bars, muted sage-teal main color `#9CC5C4`, small orange accent `#F2672E`). DESIGN.md is now the spec. Key rules: honesty (every number from the DB), hatch only on bars/fills, the orange budget, no all-caps, General Sans + Geist Mono for ids only, motion limited to 4 effects. The Phase 3 code still has the old look until Phase 3.5.
+- Redesign interpretations (confirm with the user if in doubt):
+  - Click events stay orange (the color spec says click = orange) even though orange is otherwise limited to the logo, primary button, live dot and one highlighted bar.
+  - The "current" bar is solid sage; the orange highlighted bar is optional, at most one per chart.
+  - Nav label "Journeys" → routes move to `/dashboard/journeys`.
+  - The live dot = an event in the last 5 min.
+  - The click grid covers the last 28 days, in the viewer's time zone via a `cf_tz` cookie (UTC fallback, labelled).
 - **Cache Components pattern for dashboard pages:** the page component is sync (heading in the static shell); the data part is an async component in `src/components/**` behind `<Suspense fallback={Skeleton}>` that calls `await connection()` **before** any DB read. This applies even on `[sessionId]`: `await params` alone doesn't stop prerendering in dev (the param value is known), and mongoose then hits `new Date()` during the prerender.
 - No `loading.tsx` files (deviation from PHASES' wording): the Suspense fallbacks are the loading state and keep the headings in the static shell.
 - `usePathname` suspends on `[sessionId]` under Cache Components, so `ActiveNavLinks` is always inside `<Suspense fallback={<NavLinks pathname={null} />}>`.

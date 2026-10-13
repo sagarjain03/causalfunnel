@@ -68,31 +68,57 @@ Done when:
 
 ---
 
+## Phase 3.5 — Redesign
+**Goal:** replace the generic first UI with the "Bento on dark" design (DESIGN.md). Every number stays real (honesty rule).
+
+Tasks:
+1. **Fonts:** download General Sans woff2 (300, 400, 500, 600) from Fontshare into `src/app/fonts/`, load it with `next/font/local`, and keep Geist Mono for session ids only.
+2. **Tokens:** rewrite `globals.css` with the DESIGN.md §2 palette, the shadcn aliases, the heat ramp, and the `.hatch` utility.
+3. **Frame + top bar:** the rounded app frame, logo, floating pill navbar (Overview / Journeys / Heatmap) with the sliding active pill (motion `layoutId`), live dot, "Open demo store" button, and greeting row (client-computed time of day and date). Remove the sidebar and the mobile sheet nav.
+4. **New services** (ARCHITECTURE.md §4.1): `getWeeklyActivity`, `getStatsWithChange`, `getClickGrid`, `getLatestJourney`, `getTopPages`, and `reached_checkout` in `listSessions`. Also the `cf_tz` time-zone cookie.
+5. **Overview bento:** activity, tiles, top pages, heatmap preview + latest journey, click heat grid, recent journeys, plus the mobile order and the empty-database card.
+6. **Restyle Journeys:** move `/dashboard/sessions` → `/dashboard/journeys` (list) and `/dashboard/journeys/[sessionId]` (timeline left, page preview right). Keep the loading, empty, error and not-found states.
+
+Done when:
+- [ ] General Sans renders (no fallback font visible after load, no layout shift)
+- [ ] `grep -rn "uppercase" src/` finds nothing outside `components/ui`; no hex in components
+- [ ] Every Overview number matches the database (cross-check against the API, `clean:test` dry run counts, or Atlas)
+- [ ] "New this week" shows when the previous 7 days are empty
+- [ ] Orange appears only in the places DESIGN.md §2 allows
+- [ ] At 375px: single column, in the DESIGN.md §6 order, no page-level horizontal scroll
+- [ ] `npm run build` passes with no Suspense / blocking-route errors
+
+---
+
 ## Phase 4 — Heatmap view
 **Goal:** the required Heatmap feature, accurate across screen sizes.
 
+Built in the Phase 3.5 style (DESIGN.md §7): a large preview card with a floating pill toolbar.
+
 Tasks:
-1. Page selector (shadcn `Select`) fed by `/api/pages`, selection stored in `?page=` search param.
-2. `heatmap-canvas.tsx` — scaled iframe preview of the page + absolutely positioned dots using normalized coordinates (ARCHITECTURE.md §5).
-3. Dots / Grid toggle; Desktop / Mobile filter.
-4. Legend with heat ramp + click count.
+1. Page selector (shadcn `Select`, styled as a pill) fed by `/api/pages`, selection stored in the `?page=` search param.
+2. `heatmap-canvas.tsx`: a scaled iframe preview of the page (`?cf_preview=1`) + absolutely positioned dots using normalized coordinates (ARCHITECTURE.md §5).
+3. Dots / Grid toggle; Desktop / Mobile filter (in the floating toolbar).
+4. Legend with the heat ramp + real click counts.
+5. **Replay scrubber** at the bottom of the card: play/pause + a range slider over the click time span. Only clicks up to the scrubber time are shown; on play, dots appear in timestamp order (anime.js).
+6. Enable the Heatmap item in the pill navbar.
 
 Done when:
 - [ ] A click on a known button appears on that button in the heatmap
 - [ ] Clicks from a 375px viewport are not mixed with desktop by default
 - [ ] Empty page → empty state, not a blank box
+- [ ] Scrubbing to the start shows no dots; scrubbing to the end shows all of them
 
 ---
 
 ## Phase 5 — UI polish & animation
-**Goal:** "awesome" UI without hurting readability or performance.
+**Goal:** the motion in DESIGN.md §9, and nothing more, without hurting readability or performance.
 
 Tasks:
-1. Aceternity: one background effect (e.g. Spotlight or Background Beams) on the overview header; one for empty states. Nothing behind data.
-2. motion: page transitions, table row stagger on first load, timeline items slide in, hover lift on cards.
-3. anime.js: heatmap dots stagger in by timestamp; stat card numbers count up.
-4. "Live" pulse indicator + auto-refresh every 10s on sessions page (optional).
-5. Lighthouse check: performance ≥ 90 on dashboard.
+1. anime.js: big numbers count up once on load; bars grow from 0 once with a 40ms stagger.
+2. Verify the nav pill slide (Phase 3.5) and the heatmap replay (Phase 4) match DESIGN.md §9 timings.
+3. Live dot pulse only while "Live"; optional auto-refresh every 10s on the Journeys page.
+4. Lighthouse check: performance ≥ 90 on the dashboard.
 
 Done when:
 - [ ] Reduced-motion users see no movement

@@ -7,8 +7,8 @@
 | Framework | **Next.js 16** (App Router, Turbopack) | One repo, one deploy. Route Handlers are our Node.js backend. |
 | Language | **TypeScript** (strict) | Shared types between API and UI. |
 | UI | **React 19**, **Tailwind CSS v4**, **shadcn/ui** | Accessible primitives we own as source code. |
-| Fancy UI | **Aceternity UI** (copy-paste components) | Hero/background effects on non-data surfaces only. |
-| Animation | **motion** (Framer Motion) for component/layout transitions, **anime.js v4** only for heatmap dot reveal & number counters | See RULES.md §3 for the boundary. |
+| Fonts | **General Sans** (self-hosted, `next/font/local`) + **Geist Mono** for session ids | See DESIGN.md §4. |
+| Animation | **motion** for the navbar pill slide only, **anime.js v4** for number count-up, bar grow and heatmap replay | See DESIGN.md §9 and RULES.md §3. |
 | Icons | **lucide-react** | Default for shadcn. |
 | Validation | **zod** v4 | Validate every API input at the boundary. |
 | Database | **MongoDB Atlas** + **mongoose** | Required by assignment. |
@@ -88,11 +88,32 @@ All responses use one envelope:
 | `GET` | `/api/pages` | — | `{ data: { page_url, clicks, views }[] }` |
 
 ```ts
-type SessionSummary = { session_id; event_count; click_count; page_view_count; first_seen; last_seen; pages: string[] }
+type SessionSummary = { session_id; event_count; click_count; page_view_count; first_seen; last_seen; pages: string[]; reached_checkout: boolean }
 type ClickPoint = { x; y; viewport_w; page_h }
 ```
 
 Status codes: `400` validation, `404` unknown session, `405` wrong method, `500` unexpected (logged, generic message to client).
+
+### 4.1 Overview services
+
+The Overview bento (DESIGN.md §6) is rendered by Server Components that call these functions directly; there are no new public API routes. All live in `src/server/services/` and **must be computed with MongoDB aggregation**. JavaScript may only shape the result (e.g. filling days with no events with 0), never count or group raw events.
+
+| Function | File | Returns | How |
+|---|---|---|---|
+| `getWeeklyActivity(timeZone)` | `stats.ts` | `{ days: { date: "YYYY-MM-DD", events: number }[7], thisWeek: number, lastWeek: number }`. Days run oldest → today in `timeZone`; `lastWeek` covers the 7 days before. | `$match` timestamp ≥ start of (today − 13 days), `$group` by `$dateToString { format: "%Y-%m-%d", date: "$timestamp", timezone }`. JS fills missing days with 0 and splits the result into the two weeks. |
+| `getStatsWithChange()` | `stats.ts` | For `sessions`, `events`, `clicks` and `pages`: `{ current, previous }`, plus `lastEventAt` (for the live dot) | One `$facet`: rolling windows `[now − 7d, now)` and `[now − 14d, now − 7d)`. Each window counts events, clicks (`event_type: "click"`), distinct `session_id` and distinct `page_url`. `lastEventAt` = `$max` timestamp. `previous = 0` → the UI shows "New this week". |
+| `getClickGrid(timeZone)` | `heatmap.ts` | `{ cells: { day: 1..7, bucket: 0..11, clicks: number }[], max: number }` (ISO weekday, Mon = 1; bucket = 2-hour block) | `$match` clicks in the last 28 days, `$group` by `{ $isoDayOfWeek: { date, timezone } }` and `{ $floor: { $divide: [{ $hour: { date, timezone } }, 2] } }`. |
+| `getLatestJourney(limit = 8)` | `sessions.ts` | `{ session_id, events: EventDto[] } \| null`: the session with the newest event, and its last `limit` events in time order | `$sort { timestamp: -1 }` + `$limit 1` (uses the `{ timestamp: -1 }` index) to find the session, then that session's events via the `{ session_id, timestamp }` index. |
+| `getTopPages(limit = 5)` | `heatmap.ts` | `PageSummary[]` sorted by clicks desc (feeds Top pages; `[0]` feeds the heatmap preview) | The same `$group` as `listPages()`, sorted `{ clicks: -1, page_url: 1 }`, `$limit`. |
+| `reached_checkout` in `listSessions()` | `sessions.ts` | A new boolean on every `SessionSummary` | In the existing `$group`: `reached_checkout: { $max: { $regexMatch: { input: "$page_url", regex: "/checkout\.html$" } } }`. |
+
+The heatmap preview's dots reuse `getHeatmap(topPage.page_url)`, filtered to `viewport_w ≥ 768`. "Recent journeys" reuses `listSessions({ limit: 5 })`.
+
+**Time zone for day/hour grouping.** "Today", weekdays and hours depend on the viewer's zone, which the server doesn't know.
+- A tiny client component in the dashboard layout writes the browser's IANA zone (`Intl.DateTimeFormat().resolvedOptions().timeZone`) to a `cf_tz` cookie, and calls `router.refresh()` the first time it sets it.
+- Data components read it with `cookies()` (runtime data, inside `<Suspense>`) and validate it (`new Intl.DateTimeFormat("en", { timeZone })` doesn't throw), falling back to `"UTC"`.
+- The UI labels the grid and the activity chart "UTC" while the fallback is in use.
+- Rolling 7-day windows (`getStatsWithChange`) need no time zone.
 
 ## 5. Heatmap rendering
 
@@ -119,13 +140,14 @@ causalfunnel/
 │   ├── app/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx              # redirects to /dashboard (or landing)
-│   │   ├── globals.css           # design tokens (see DESIGN.md)
+│   │   ├── globals.css           # design tokens + .hatch utility (see DESIGN.md)
+│   │   ├── fonts/                # General Sans woff2 (300, 400, 500, 600)
 │   │   ├── dashboard/
-│   │   │   ├── layout.tsx        # sidebar + header shell
-│   │   │   ├── page.tsx          # overview stats
-│   │   │   ├── sessions/
-│   │   │   │   ├── page.tsx      # sessions table
-│   │   │   │   └── [sessionId]/page.tsx   # journey timeline
+│   │   │   ├── layout.tsx        # rounded frame + top bar (logo, pill navbar, live dot, demo button)
+│   │   │   ├── page.tsx          # overview bento
+│   │   │   ├── journeys/
+│   │   │   │   ├── page.tsx      # journeys (sessions) table
+│   │   │   │   └── [sessionId]/page.tsx   # timeline + page preview
 │   │   │   └── heatmap/page.tsx
 │   │   └── api/
 │   │       ├── events/route.ts
@@ -135,14 +157,14 @@ causalfunnel/
 │   │       └── pages/route.ts
 │   ├── components/
 │   │   ├── ui/                   # shadcn (generated, do not hand-edit much)
-│   │   ├── aceternity/           # copied Aceternity components
-│   │   ├── dashboard/            # sidebar, stat-card, page-header
-│   │   ├── sessions/             # sessions-table, event-timeline
+│   │   ├── dashboard/            # frame, pill-nav, live-dot, greeting, bento cards
+│   │   ├── charts/               # hatched bars, heat grid (no chart library)
+│   │   ├── sessions/             # sessions-table, event-timeline, page preview
 │   │   └── heatmap/              # page-select, heatmap-canvas, heat-legend
 │   ├── server/                   # backend logic, no React here
 │   │   ├── db.ts                 # cached mongoose connection
 │   │   ├── models/event.ts       # schema + indexes
-│   │   ├── services/             # events.ts, sessions.ts, heatmap.ts
+│   │   ├── services/             # events.ts, sessions.ts, heatmap.ts, stats.ts (see §4.1)
 │   │   └── http.ts               # ok(), fail(), cors helpers
 │   ├── lib/
 │   │   ├── utils.ts              # cn()
