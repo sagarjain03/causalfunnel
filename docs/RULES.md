@@ -51,6 +51,7 @@ These are hard rules for anyone (human or AI) writing code in this repo. When a 
 - Use `.lean()` on read queries. Sorting is always explicit.
 - File names: `kebab-case.tsx`. Components: `PascalCase`. One component per file.
 - `tracker.js` is plain ES2017, no dependencies, wrapped in an IIFE, under ~3 KB.
+- Any future automated browser or script test (Playwright, smoke scripts, console snippets) must use page URLs under `/__test/` (e.g. `http://localhost:3000/__test/load-more`), so `npm run clean:test` removes them.
 - NEVER run git commit, git push, or any git command that changes history. The user commits manually. When a task is done, suggest a commit message in the format `feat(api): add sessions endpoint` and stop.
 
 ## 5. Error handling

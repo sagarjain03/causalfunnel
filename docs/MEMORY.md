@@ -53,10 +53,11 @@
 - Times in the UI: `<LocalTime>` (client) renders a labelled UTC time on the server and switches to the browser's local time after hydration (`useSyncExternalStore`). Relative "x ago" times use `fetchedAt` from the data loader, so server and client match.
 - Load more: the client calls `GET /api/sessions?cursor=`; failures show a sonner toast and keep the existing rows. The response is typed with the shared `SessionsPage` type (our own API), not zod-parsed, to keep zod out of the client bundle.
 - Sessions table at <640px hides Clicks and Pages (`hidden sm:table-cell`); `overflow-x-auto` is only a fallback.
+- `npm run clean:test` (`scripts/clean-test-data.mjs`) removes **whole test sessions**: any session with at least one event whose `page_url` starts with `https://smoke.example` (followed by `/`, `:` or the end), contains `/__test/`, or ends in `/demo/spa-step` (the Phase 2 Playwright check). All events of those sessions are deleted, so no half-sessions remain. It is a dry run by default (a table per session); it deletes only with `--yes`, using the same session filter. RULES §4: future automated tests must use `/__test/` URLs.
 - Smoke test data persists in the DB under `https://smoke.example/<runId>/…` (there's no delete endpoint).
 
 ## Known issues / TODO
-- Smoke test data (`smoke.example` URLs) stays in the DB and will appear in the dashboard; needs a cleanup script or separate test DB in Phase 6.
+- ~~Smoke test data stays in the DB and appears in the dashboard.~~ Resolved: run `npm run clean:test` (dry run), then `npm run clean:test -- --yes` to delete.
 - The Atlas password was once in `.env.example` (never committed; it now holds placeholders). Rotate it before deploying.
 - All manual test clicks so far were made with DevTools docked, at `viewport_w` ≈ 618px, so they fall in the mobile (<768px) bucket. An empty Desktop heatmap in Phase 4 is expected until desktop-width clicks are generated. This is not a bug.
 - The build warns about a stray `D:\pnpm-lock.yaml` outside the repo (harmless; delete it or set `turbopack.root`).
