@@ -56,6 +56,8 @@ One collection: `events`.
   viewport_h?: number,         // window.innerHeight
   page_h?: number,             // document.documentElement.scrollHeight
   layout_w?: number,           // document.documentElement.clientWidth: viewport minus scrollbar (added in Phase 4; older clicks lack it)
+  target?: string,             // clicked element: tag + #id/.class + up to 60 chars of visible text, never form values (tracker v3+)
+  source?: "seed",             // only on events written by scripts/seed.ts; not accepted by the API. Sparse index { source: 1 }
   // optional context:
   referrer?: string,
   user_agent?: string

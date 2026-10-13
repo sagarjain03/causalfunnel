@@ -4,6 +4,12 @@ import type { OverviewStats } from "@/types";
 
 type CountFacet = { n: number }[];
 
+/** True if any event was written by scripts/seed.ts (the dashboard then shows "Includes demo data"). */
+export async function hasSeedData(): Promise<boolean> {
+  await connectDb();
+  return (await EventModel.exists({ source: "seed" })) !== null;
+}
+
 /** Time of the newest event (for the Live/Idle dot), or null if there are none. Uses the { timestamp: -1 } index. */
 export async function getLastEventAt(): Promise<Date | null> {
   await connectDb();

@@ -26,12 +26,13 @@ async function main() {
   const events = mongoose.connection.collection("events");
 
   // 1. Sessions touched by a test URL. 2. Every event of those sessions (same filter for report and delete).
-  const sessionIds = await events.distinct("session_id", TEST_URL_FILTER);
+  // Never touch seed data (scripts/seed.ts, source: "seed"); `npm run seed -- --clear` owns that.
+  const sessionIds = await events.distinct("session_id", { ...TEST_URL_FILTER, source: { $ne: "seed" } });
   if (sessionIds.length === 0) {
     console.log("No test sessions found. Nothing to do.");
     return;
   }
-  const sessionFilter = { session_id: { $in: sessionIds } };
+  const sessionFilter = { session_id: { $in: sessionIds }, source: { $ne: "seed" } };
 
   const bySession = await events
     .aggregate([

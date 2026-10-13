@@ -8,6 +8,7 @@ type ClickDoc = {
   viewport_w: number;
   page_h: number;
   layout_w?: number;
+  target?: string;
   timestamp: Date;
 };
 
@@ -18,7 +19,7 @@ type ClickDoc = {
 export async function getHeatmap(pageUrl: string, viewportW?: number): Promise<HeatmapData> {
   await connectDb();
   const filter = { page_url: pageUrl, event_type: "click" as const, ...(viewportW ? { viewport_w: viewportW } : {}) };
-  const docs = await EventModel.find(filter, { _id: 0, x: 1, y: 1, viewport_w: 1, page_h: 1, layout_w: 1, timestamp: 1 })
+  const docs = await EventModel.find(filter, { _id: 0, x: 1, y: 1, viewport_w: 1, page_h: 1, layout_w: 1, target: 1, timestamp: 1 })
     .sort({ timestamp: 1, _id: 1 })
     .lean<ClickDoc[]>();
 
@@ -28,6 +29,7 @@ export async function getHeatmap(pageUrl: string, viewportW?: number): Promise<H
     viewport_w: d.viewport_w,
     page_h: d.page_h,
     ...(d.layout_w ? { layout_w: d.layout_w } : {}),
+    ...(d.target ? { target: d.target } : {}),
     timestamp: d.timestamp.toISOString(),
   }));
   return { page_url: pageUrl, clicks };

@@ -47,6 +47,8 @@ DESIGN.md describes the UI **as it is in the code** (sections marked Built / Pla
 - Mobile works at 375px with no page-level horizontal scroll. Journeys table below `sm`: only id, status, narrow "last seen"; the Path column needs `md`. The planned bento becomes a single column in the DESIGN.md §6 order; wide content scrolls inside its card, never the page.
 - **Demo store (`public/demo`)** has its own design, defined in `store.css` (DESIGN.md §10); dashboard rules (tokens, glass, orange budget, no hex) don't apply there. Keep it static (no JS except `tracker.js`), keep every image a CSS background on a fixed-size box (no `<img>`, so layout never shifts), and credit every photo in `img/CREDITS.md` (Unsplash/Pexels license only). Product photos must have a plain white or light-grey studio background. Hero text must keep ≥ 4.5:1 contrast (worst case against the brightest pixel behind it); the `.hero::before` overlay provides it.
 - **Heatmap accuracy:** plot only clicks recorded at one exact `viewport_w` at a time (no desktop/mobile buckets), rendered at that group's layout width (`layout_w`, else `viewport_w`) and its tallest `page_h`. Never mix widths in one view.
+- **Seed data isolation:** `scripts/seed.ts` writes events with `source: "seed"` straight to MongoDB. `source` is not accepted by the public API (so it can't be spoofed). `npm run seed -- --clear` deletes only `source: "seed"`; `clean:test` explicitly excludes it. Whenever seed data exists the dashboard shows "Includes demo data".
+- **Seed layout:** after any demo store layout change, re-run `scripts/capture-seed-layout.js` (Playwright tool) and save `window.__seedLayout` to `scripts/seed-layout.json`, then re-seed; otherwise seeded clicks stop matching the pages.
 - **Automated visits to demo pages** (Playwright, screenshots, scripts) must add `?cf_preview=1` so the tracker sends nothing.
 
 ## 4. Code rules
@@ -62,8 +64,9 @@ DESIGN.md describes the UI **as it is in the code** (sections marked Built / Pla
 - Mongo connection is cached on `globalThis` to survive hot reload. Never call `mongoose.connect` elsewhere.
 - Use `.lean()` on read queries. Sorting is always explicit.
 - File names: `kebab-case.tsx`. Components: `PascalCase`. One component per file.
-- `tracker.js` is plain ES2017, no dependencies, wrapped in an IIFE, under ~3 KB.
-- **Tracker cache-busting:** every `public/demo` page loads the tracker as `/tracker.js?v=N`. **Bump N in all demo pages whenever `tracker.js` changes** (current: `v=2`). `/tracker.js` itself is served with `Cache-Control: public, max-age=300` (`next.config.ts` `headers()`).
+- `tracker.js` is plain ES2017, no dependencies, wrapped in an IIFE, about 5 KB unminified (mostly comments).
+- **Tracker privacy:** a click's `target` is tag + #id/.class + up to 60 chars of visible text. Never send text or values of `input`/`select`/`textarea`, and for an element that contains a form field use only its own text nodes. Without a matching element, send only tag + id/class, no text.
+- **Tracker cache-busting:** every `public/demo` page loads the tracker as `/tracker.js?v=N`. **Bump N in all demo pages whenever `tracker.js` changes** (current: `v=3`). `/tracker.js` itself is served with `Cache-Control: public, max-age=300` (`next.config.ts` `headers()`).
 - Any future automated browser or script test (Playwright, smoke scripts, console snippets) must use page URLs under `/__test/` (e.g. `http://localhost:3000/__test/load-more`), so `npm run clean:test` removes them.
 - NEVER run git commit, git push, or any git command that changes history. The user commits manually. When a task is done, suggest a commit message in the format `feat(api): add sessions endpoint` and stop.
 

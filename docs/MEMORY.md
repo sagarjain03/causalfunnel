@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** Phase 4 heatmap built + verified (uncommitted). Dot style decided (normal blend + rings).
+- **Phase:** Phase 4 heatmap done; tracker `target` + seed data done (uncommitted). DB: 85 real events + 2,899 seed events (150 seeded journeys).
 - **Working on (file):** none
-- **Next step:** Phase 3.5 Step B (ARCHITECTURE §4.1 services, bento cards).
+- **Next step:** README: add seeding steps (`npm run seed`, `--origin`, `--clear`, Node 22.6+ for seeding), the `target` field in the API section, and the tracker size (~5 KB). Then Phase 3.5 Step B.
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -60,6 +60,15 @@
   - The other 11 clicks land on what they plausibly targeted: category links (6, old clicks without `layout_w`), filter checkboxes (4), the first product image (1).
   - Screenshots: `screenshots/heatmap-1280.png`, `heatmap-375.png`, `heatmap-closeup-1280.png`.
 - [2026-10-14] Heatmap dot style (user decision): normal blending, orange fill at 80% + 1px light inner ring (`--text`) + 1px dark outer ring (`--app`), replacing 55% + `mix-blend-mode: screen`, which was nearly invisible on light pages. Re-took `screenshots/heatmap-1280.png` and `heatmap-closeup-1280.png`; both "Add to cart" dots are still inside the drawn button and clearly visible.
+- [2026-10-14] README.md written for reviewers (summary, screenshots in `docs/images/` (committed), Mermaid flow, stack, setup, tracker embed, API reference, data model, trade-offs, structure, next steps). Live demo and demo store links are placeholders until deploy. Re-took overview, journeys and journey-detail screenshots from real data (2 sessions, 85 events) before copying.
+- [2026-10-14] Tracker `target` + seed data (uncommitted):
+  - Tracker v3 (`?v=3`): clicks send `target` (nearest a/button/input/select/textarea/label/[data-cf], tag + #id/.class + ≤60 chars visible text; form fields never send text/values; elements wrapping a form field use only their own text nodes; no match → tag + id/class, no text). zod + model accept `target` (optional, ≤140). Heatmap and session APIs return it.
+  - `source: "seed"` on the model only (NOT in the zod/API schema, so it can't be spoofed); sparse index `{ source: 1 }`. `hasSeedData()` → `DemoDataPill` ("Includes demo data") on every dashboard page.
+  - `scripts/capture-seed-layout.js` (Playwright snippet, run with the MCP tool; Playwright is not a dependency) renders each demo page EXACTLY like the heatmap preview (iframe at layout width, full page height, no scrolling; desktop = width − 15px scrollbar, mobile = full width) at 1536/1366/1280/390/375 and records clickable elements with sample points whose ±3px neighbourhood all resolves (elementFromPoint + tracker's describe logic) to that element. Saved to `scripts/seed-layout.json` (128 KB, minified).
+  - `scripts/seed.ts` (`npm run seed`, Node `--experimental-strip-types`, needs Node 22.6+): 150 journeys over 28 days, evening/weekend weighted, exact shares from a shuffled deck (Home 100 → Products 70 → Product 45 → Checkout 18%, 15% bounce, 65/35 desktop/mobile), 2–12 clicks/page weighted to buttons and product cards, last click = the element that leads to the next page, 5–90 s per page, seeded RNG (reproducible), re-seeding clears old seed first, `--origin` for deployed previews, `--clear` deletes only seed.
+  - First run result: 150 journeys, 2,899 events, 2,519 clicks; funnel 100 → 70.0 → 45.3 → 18.0%; 15.3% bounced; devices (journeys with clicks, n=127) 66.1% desktop / 33.9% mobile.
+  - Verified: all 2,519 seeded clicks land on the element named by their `target` in the heatmap preview (4 pages × 5 widths); `--clear` removed only the 2,899 seed events (85 real untouched); `clean:test` finds nothing.
+  - Earlier capture attempts were wrong and fixed: scrollIntoView scrolled sideways strips; sticky elements moved with window scroll; mobile emulation (DPR 3) wrapped text differently than the preview; ±2px jitter crossed label/input borders. The preview-identical iframe capture + safe neighbourhoods fixed all (99.6% → 100%).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -95,6 +104,7 @@
 - **README trade-off: tracker caching.** Customer sites embed a stable `/tracker.js` URL, so it's served with `Cache-Control: public, max-age=300`: a tracker update reaches every visitor within 5 minutes, at the cost of browsers re-checking it at most every 5 minutes instead of caching it for days. Our own demo pages also use `/tracker.js?v=N` (bumped on every tracker change, now `v=2`) so they pick up changes immediately. Clicks recorded before a visitor gets the new tracker lack new fields (e.g. `layout_w`).
 - Heatmap preview uses `sandbox="allow-same-origin"` without scripts (user's choice): Chrome logs "Blocked script execution" for the demo page's `tracker.js` on the heatmap page. Harmless, expected.
 - Replay duration is 2s for the full span (DESIGN previously said ≤ 800ms; too fast to follow).
+- **README trade-off: seed data.** Seeded journeys make the dashboard look realistic for reviewers, but they're not real visitors. They're always marked (`source: "seed"`, "Includes demo data" pill), never mixed into test cleanup, and removable with one command. Seeded clicks are generated from captured element positions, so they land on real elements, but timing and behaviour are synthetic.
 - **Docs = code (2026-10-13, user request):** DESIGN.md/RULES.md now describe the UI exactly as built. Don't change colors, layout, spacing, fonts, copy or styling unless asked; if code and docs differ, fix the docs or ask. Existing shadcn/sonner motion (skeleton pulse, table-row colour fade, toasts) is documented and kept as-is.
 - **Font: Onest, not General Sans.** General Sans' ITF Free Font License v2.0 §02 forbids distributing the files via a "repository" or "publicly accessible servers" (a public GitHub repo). Onest loads through `next/font/google`, so `next build` now needs network access once to fetch it (Phase 0 had avoided that).
 - Page preview iframe: `sandbox="allow-scripts"` **without** `allow-same-origin` (opaque origin: the page can't touch our cookies/storage/DOM), `referrerPolicy="no-referrer"`, `pointer-events-none`, `?cf_preview=1`. For a click step it's rendered at the click's own `viewport_w × page_h`, so the dot lands on the clicked element; the card scrolls to it.
@@ -119,4 +129,5 @@
 - The Atlas password was once in `.env.example` (never committed; it now holds placeholders). Rotate it before deploying.
 - All manual test clicks so far were made with DevTools docked, at `viewport_w` ≈ 618px, so they fall in the mobile (<768px) bucket. An empty Desktop heatmap in Phase 4 is expected until desktop-width clicks are generated. This is not a bug.
 - [Done 2026-10-13, user said yes] Deleted all `/demo*` events (old layouts) incl. sessions `414d002c…` and `ad0e7dc5…`: 92 events, collection now 0.
+- **`ALLOWED_ORIGINS` doesn't block ingestion:** `corsHeaders()` only sets `Access-Control-Allow-Origin`; `POST /api/events` stores events from any origin (sendBeacon/text/plain never needs to read the response). README states this; enforcing an allowlist or per-site keys is future work.
 - The build warns about a stray `D:\pnpm-lock.yaml` outside the repo (harmless; delete it or set `turbopack.root`).

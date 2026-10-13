@@ -56,6 +56,29 @@
     send(evt);
   });
 
+  // Short description of what was clicked: nearest a/button/input/select/textarea/label/[data-cf] (else the element
+  // itself), as tag + #id or .firstClass, plus up to 60 chars of visible text. Never text or values of form fields.
+  function describeTarget(el) {
+    var hit = el && el.closest ? el.closest("a,button,input,select,textarea,label,[data-cf]") : null;
+    var node = hit || el;
+    if (!node || !node.tagName) return undefined;
+    var tag = node.tagName.toLowerCase();
+    var cls = typeof node.className === "string" ? node.className.trim().split(/\s+/)[0] : "";
+    var desc = tag + (node.id ? "#" + node.id : cls ? "." + cls : "");
+    if (hit && !/^(input|select|textarea)$/.test(tag)) {
+      var text = "";
+      if (node.querySelector("input,select,textarea")) {
+        // Wraps a form field (e.g. <label>State <select>): own text nodes only, so no selected option or value leaks.
+        for (var i = 0; i < node.childNodes.length; i++) if (node.childNodes[i].nodeType === 3) text += node.childNodes[i].nodeValue;
+      } else {
+        text = node.innerText || "";
+      }
+      text = text.replace(/\s+/g, " ").trim().slice(0, 60);
+      if (text) desc += ' "' + text + '"';
+    }
+    return desc.slice(0, 140);
+  }
+
   var onClick = guard(function (e) {
     var evt = base("click"), r = Math.round;
     evt.x = r(e.pageX);
@@ -64,6 +87,7 @@
     evt.layout_w = r(d.documentElement.clientWidth); // innerWidth minus the scrollbar: the width the page laid out at
     evt.viewport_h = r(w.innerHeight);
     evt.page_h = Math.max(1, r(d.documentElement.scrollHeight));
+    evt.target = describeTarget(e.target);
     send(evt);
   });
 

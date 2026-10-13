@@ -1,4 +1,5 @@
 import { Suspense, type ReactNode } from "react";
+import { DemoDataPill } from "@/components/dashboard/demo-data-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type PageTitleProps = {
@@ -11,7 +12,12 @@ type PageTitleProps = {
 export function PageTitle({ title, summary }: PageTitleProps) {
   return (
     <header className="flex flex-col gap-1">
-      <h1 className="text-2xl font-medium tracking-tight">{title}</h1>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h1 className="text-2xl font-medium tracking-tight">{title}</h1>
+        <Suspense fallback={null}>
+          <DemoDataPill />
+        </Suspense>
+      </div>
       <Suspense fallback={<Skeleton className="h-5 w-64 max-w-full" />}>
         <p className="text-sm text-muted-foreground">{summary}</p>
       </Suspense>

@@ -178,6 +178,8 @@ A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is 
 - No sidebar, no hamburger, no sheet.
 
 ### Page title (Built)
+**"Includes demo data" pill:** when any event has `source: "seed"`, a small muted pill (`glass`, 12px, `--text-muted`, like the "Browsing" status pill) sits next to the page title on Overview, Journeys and Heatmap, and next to "← All journeys" on journey detail. It streams in separately (no skeleton) and has a tooltip explaining `npm run seed -- --clear`.
+
 There's no greeting and no date pill. Each page starts with `PageTitle` (`components/dashboard/page-title.tsx`): an `h1` (24px/500) and **one muted sentence of real data** under it. The sentence streams behind `<Suspense>`, with a 20×256px skeleton line while it loads.
 - **Overview:** `{n} journeys and {m} events. Last activity {relative time}.`
   - `n` and `m` come from `getOverviewStats()`; the last activity from `getLastEventAt()`.

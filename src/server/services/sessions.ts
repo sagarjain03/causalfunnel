@@ -143,5 +143,6 @@ export async function getSessionEvents(sessionId: string): Promise<EventDto[]> {
     page_h: doc.page_h ?? undefined,
     referrer: doc.referrer ?? undefined,
     user_agent: doc.user_agent ?? undefined,
+    target: doc.target ?? undefined,
   }));
 }

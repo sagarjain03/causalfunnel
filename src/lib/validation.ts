@@ -46,6 +46,8 @@ export const eventSchema = z.discriminatedUnion(
       page_h: dimension,
       // Layout width (viewport minus scrollbar). Optional: older trackers didn't send it.
       layout_w: dimension.optional(),
+      // Short description of the clicked element (tag, #id/.class, visible text). Never form-field values.
+      target: z.string().max(140).optional(),
     }),
   ],
   { error: "event_type must be page_view or click" },

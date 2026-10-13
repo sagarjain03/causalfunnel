@@ -15,6 +15,8 @@ export type EventDto = {
   page_h?: number;
   referrer?: string;
   user_agent?: string;
+  /** Clicked element description (tracker v3+). */
+  target?: string;
 };
 
 export type SessionSummary = {
@@ -43,6 +45,8 @@ export type ClickPoint = {
   page_h: number;
   /** Layout width (viewport minus scrollbar); missing on clicks recorded before it existed. */
   layout_w?: number;
+  /** Clicked element description (tracker v3+). */
+  target?: string;
   timestamp: string;
 };
 
