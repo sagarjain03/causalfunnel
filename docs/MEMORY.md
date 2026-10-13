@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** Overview rebuilt as a real analytics dashboard (uncommitted). Before that: Phase 4 heatmap, tracker `target` + seed data. DB: 85 real events + 2,899 seed events (150 seeded journeys).
+- **Phase:** Polish pass done (uncommitted). Overview rebuild committed (a8510d0). DB: 89 real events + 2,983 seed events (150 seeded journeys, re-seeded with tracker v4 targets).
 - **Working on (file):** none
-- **Next step:** user review of the Overview + commit. Then README: add seeding steps (`npm run seed`, `--origin`, `--clear`, Node 22.6+ for seeding), the `target` field in the API section, and the tracker size (~5 KB). Then Phase 3.5 Step B.
+- **Next step:** user review of the polish pass, then commit. Then README: add seeding steps (`npm run seed`, `--origin`, `--clear`, Node 22.6+ for seeding), the `target` field in the API section, and the tracker size (~5 KB). Then Phase 3.5 Step B.
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -70,7 +70,7 @@
   - Verified: all 2,519 seeded clicks land on the element named by their `target` in the heatmap preview (4 pages × 5 widths); `--clear` removed only the 2,899 seed events (85 real untouched); `clean:test` finds nothing.
   - Earlier capture attempts were wrong and fixed: scrollIntoView scrolled sideways strips; sticky elements moved with window scroll; mobile emulation (DPR 3) wrapped text differently than the preview; ±2px jitter crossed label/input borders. The preview-identical iframe capture + safe neighbourhoods fixed all (99.6% → 100%).
 
-- [2026-10-14] Overview rebuild (uncommitted):
+- [2026-10-14] Overview rebuild (committed by user, a8510d0):
   - `src/server/services/overview.ts` (aggregation only): `periodBounds`, `getOverviewKpis`, `getFunnel`, `getDeviceSplit`, `getTopTargets`, `getClickGrid` (ARCHITECTURE §4.1). `src/components/overview/*`: range pill, KPI strip, funnel, devices, activity, top elements, click grid, recent journeys, per-card skeleton / empty / `catchError` error. `TimezoneSync` writes `cf_tz`. `PageTitle` got an optional `action` slot.
   - Deleted the old Totals card (`overview-stats.tsx`, `stat-tile.tsx`, `overview-stats-skeleton.tsx`) and the now-unused `getOverviewStats()` + `OverviewStats` type.
   - Definitions (DESIGN §6): journey belongs to the period of its first event; previous period cut at the same time of day; bounce = exactly 1 page view; avg duration counts bounces as 0; devices from the widest click width, no clicks = "Unknown".
@@ -78,6 +78,16 @@
   - `heatClass` is exported from `heatmap-overlay.tsx` (shared with the click grid); `JourneyPath` got an optional `max` chip count. Sparkline tooltips use the default indicator (with `indicator="line"` shadcn hides the date when a custom formatter is used).
   - Verified: tsc, lint, build (`/dashboard` ◐). An independent check (plain `find()` + JS counting) matched every number on the page for 7 and 28 days (Asia/Calcutta): 7d = 38 journeys (+8.6%), 21.1% conversion (+3.9 pp), 2m 33s (+34.8%), 28.9% bounce (−2.5 pp), 582 clicks (+0.3%), funnel 36/27/18/8, devices 16/15/7 unknown; 28d funnel = 151/107/69/29 (seed 150/105/68/27 + real journeys), previous period empty → all "New". Playwright: range links, cookie + zone label, heatmap links, chart tooltips (date + exact values), no horizontal overflow at 375px, per-card error UI (temporary throw in `getDeviceSplit`, reverted).
   - Screenshots: `screenshots/overview-1280.png`, `screenshots/overview-375.png` (both full page).
+
+- [2026-10-14] Polish pass (uncommitted):
+  - Global 404 `src/app/not-found.tsx` (dashboard frame + logo, "Page not found", "Go to overview" + "Open demo store"). `/anything-random` and `/dashboard/random` both return 404 with it; unknown journey ids still get the journey not-found.
+  - Navigation progress bar `components/dashboard/nav-progress.tsx` (no new package): capture-phase click listener for internal `/dashboard` links + `startNavProgress()` before the two `router.push` calls (journey rows, heatmap page select). Shows after 80ms, hides on URL change (state reset during render, no effect), 10s safety timeout. Keyframes `nav-progress` in `globals.css` `@theme`. Measured with a throttled network: visible from ~150–200ms after the click until the URL changed (1.4–2.6s), never left active.
+  - Toast audit: only Load more failure had a toast; added `CopySessionId` (journey summary) with "Session id copied" / error toast. No other action lacked visible feedback.
+  - Skeleton audit: every Suspense boundary has a fallback in its content's shape; the intentional `null` fallbacks are `DemoDataPill` in `PageTitle` and on journey detail (a small inline pill beside the title / back link, no vertical shift) and `NavProgress` (invisible by default). Nothing missing, nothing changed.
+  - Activity chart: already `type="monotone"` (d3 curveMonotoneX); measured 0px overshoot between points on the line and all 5 sparklines → no change.
+  - Bounce pill verified on real data: 7d "↓ 4.6 pp" green, 14d "↑ 4.7 pp" red (conversion the other way round).
+  - Tracker v4 (`?v=4` on all demo pages): form fields → "Kind: name" from label → aria-label → placeholder (static text only), labels of a field describe that field, fallback tag#id (RULES §4 tracker privacy). Same rule in `capture-seed-layout.js`; re-captured `seed-layout.json` and re-seeded (150 journeys, 2,983 events, 2,599 clicks, same funnel shares). Verified the real `tracker.js` code (evaluated on the `?cf_preview=1` pages, nothing sent) produces the same 27 field names as the capture, e.g. "Search box: Search Northwind" (the hidden label wins over the placeholder; demo markup unchanged by decision), "Checkbox: Bags & luggage" (24 seeded clicks), "Dropdown: Sort by", "Radio: Cash on delivery". 0 old-style field targets left in seed data; real events keep their old targets.
+  - Screenshots: `overview-1280.png` (full page), `404-1280.png`, `journey-detail-1280.png` (viewport; the full page is 8,700px tall).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.

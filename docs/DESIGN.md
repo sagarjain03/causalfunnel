@@ -178,6 +178,7 @@ A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is 
   - **Live/Idle pill:** `glass`, 36px tall. Shows an 8px dot and a label: orange "Live" when the newest event is under 5 minutes old (`getLastEventAt()`), otherwise a grey dot with muted "Idle". Hovering shows the newest event's ISO time. **No pulse** (Planned, Phase 5). While loading: a 36×80px skeleton pill. It updates only on full page loads or refreshes.
   - **"Open demo store":** an orange primary pill button (36px tall, `glass-shine`), a plain `<a href="/demo">`. **Hidden below `sm`** (640px).
 - No sidebar, no hamburger, no sheet.
+- **Navigation progress bar** (`nav-progress.tsx`, in the dashboard layout): a 2px `bg-sage` bar fixed to the top of the window while a dashboard route loads. It starts on a click on an internal `/dashboard…` link to a different URL (plain left click, no modifier, no `target`) or on `startNavProgress()` (journey row click, heatmap page select, both `router.push`). It only appears if the navigation takes longer than 80ms, eases towards 90% (8s), and disappears when the URL changes (10s safety timeout). Reduced motion: it shows at 90% without moving. No dependency.
 
 ### Page title (Built)
 **"Includes demo data" pill:** when any event has `source: "seed"`, a small muted pill (`glass`, 12px, `--text-muted`, like the "Browsing" status pill) sits next to the page title on Overview, Journeys and Heatmap, and next to "← All journeys" on journey detail. It streams in separately (no skeleton) and has a tooltip explaining `npm run seed -- --clear`.
@@ -269,8 +270,8 @@ Files: `src/app/dashboard/page.tsx` + `src/components/overview/*`. Every number 
 | 1, span 12 | **KPI strip** | 5 tiles (5 across on `lg`; 2 per row below, the last full width): Journeys, Conversion rate, Avg journey duration, Bounce rate, Clicks. Each: muted label, big number (300 weight, 28/32/40px, never wraps), change pill, 40px daily sparkline (sage line over the hatch pattern). The definition is the tile's `title`. |
 | 2, span 8 | **Funnel** | Home → Products → Product → Checkout (journeys that visited each page, any order). Horizontal hatched bars scaled to the largest step, the last step solid sage; count + % of step 1 (stacked below `sm`); "↓ x% drop-off" between steps. Each row links to `/dashboard/heatmap?page=<most common URL for that step>`. |
 | 2, span 4 | **Devices** | Desktop (≥ 768px) and Mobile (< 768px) by the widest click `viewport_w` of the journey: hatched bar, journeys, conversion. Journeys without clicks are listed as "Unknown (no clicks)" (page views carry no width). |
-| 3, span 8 | **Activity** | Recharts ComposedChart, min 240px tall (grows with the row): daily journeys as hatched bars (left axis "Journeys", today solid sage) and daily events as a `--sage-dim` line (right axis "Events"). X axis = dates in the viewer's zone. |
-| 3, span 4 | **Top clicked elements** | Top 6 (page, `target`) pairs by clicks: target text (truncated, full text in `title`), page-label chip, hatched bar, count. Rows link to that page's heatmap. A muted line counts older clicks without `target`. |
+| 3, span 8 | **Activity** | Recharts ComposedChart, min 240px tall (grows with the row): daily journeys as hatched bars (left axis "Journeys", today solid sage) and daily events as a `--sage-dim` line (right axis "Events"). Lines and sparklines use `type="monotone"` (d3 `curveMonotoneX`): the curve never overshoots between points or dips below the lowest value (checked: 0px overshoot on every curve). X axis = dates in the viewer's zone. |
+| 3, span 4 | **Top clicked elements** | Top 6 (page, `target`) pairs by clicks: target text (form fields read like "Search box: Search Northwind", "Checkbox: Bags & luggage"; RULES.md tracker privacy), truncated, full text in `title`; page-label chip, hatched bar, count. Rows link to that page's heatmap. A muted line counts older clicks without `target`. |
 | 4, span 8 | **Clicks by day and hour** | 7 rows (Mon–Sun, ISO) × 12 two-hour columns, cells `--heat-1…4` with the heatmap Grid thresholds (empty = no fill), native `title` per cell ("Tue 18–20: 14 clicks"). Legend shows the real min and max non-empty cell. Below `lg` it scrolls sideways inside the card (sticky weekday column). |
 | 4, span 4 | **Recent journeys** | The newest 6 journeys overall (not range-bound): short id, relative time, `JourneyPath` (max 3 chips), status pill. Rows link to the journey; "All journeys" link top right. |
 
@@ -310,7 +311,7 @@ Files: `src/app/dashboard/page.tsx` + `src/components/overview/*`. Every number 
 - **Top:** a muted "← All journeys" link.
 - **Grid:** 12 columns from `lg` (1 column below it): left `col-span-5`, right `col-span-7`. Below `lg` the order is summary, timeline, preview.
 - **"Journey summary" card** (left):
-  - the full session id (Geist Mono, 12px, muted, wraps)
+  - the full session id (Geist Mono, 12px, muted, wraps) with a 28px outline round **copy button** (lucide `Copy`, `aria-label="Copy session id"`): copies the full id and confirms with a sonner toast "Session id copied" (error toast if the browser blocks the clipboard)
   - "Started <local date and time>"
   - 2×2 raised tiles: Duration, Events, Clicks (orange dot), Page views (sage dot), with 32px light numbers
   - "Pages visited (n)" with glass page chips
@@ -366,6 +367,8 @@ Files: `src/app/dashboard/page.tsx` + `src/components/overview/*`. Every number 
 - **Loading:** shadcn `Skeleton` blocks (`--panel-raised`, with shadcn's default `animate-pulse`) in the shape of the real content (totals tiles, table rows, summary + timeline + preview). They show no numbers.
 - **Empty:** a card with a 36px icon square, a title (18px/500), one muted sentence, and the orange **"Open demo store"** pill (a plain `<a href="/demo">`).
 - **Error (per card, Overview):** each Overview card is wrapped in `CardErrorBoundary` (`catchError` from `next/error`): a card with a `--down` warning icon, "Couldn't load {card}", and an outline **"Try again"** (`retry()`). The other cards keep working.
+- **Not found (global):** `app/not-found.tsx` for every unmatched URL (`/anything`, `/dashboard/anything`, HTTP 404). It renders in the root layout only, so it draws the dashboard frame itself: logo top-left, then a centered empty-state card (Compass icon square, "Page not found", one sentence, outline "Go to overview" + orange "Open demo store"). Unknown journey ids keep `journeys/[sessionId]/not-found.tsx` ("Journey not found", inside the dashboard frame).
+- **Toasts (sonner, only for actions with no visible result):** "Could not load more journeys" (Load more failed; the existing rows stay) and "Session id copied" / "Could not copy the session id". Every other action shows its result on screen (navigation, range, page/width/mode, replay, Load more success, Try again), so it has no toast.
 - **Error (page):** `error.tsx` in each route segment renders a card with a `--down` warning icon, "Something went wrong", a sentence, an optional "Ref: <digest>", and an outline glass **"Try again"** (`retry()`). The frame and navbar stay visible.
 
 ## 9. Motion
@@ -377,6 +380,7 @@ Files: `src/app/dashboard/page.tsx` + `src/components/overview/*`. Every number 
 | Skeleton pulse | `ui/skeleton.tsx` (shadcn default) | `animate-pulse` while loading |
 | Table row hover | `ui/table.tsx` (shadcn default) | `transition-colors` on the row background |
 | Toasts | sonner (library default) | slide-in; the loading icon spins |
+| Navigation progress bar | `nav-progress.tsx` (CSS `animate-nav-progress`, `globals.css`) | width 0 → 90% over 8s, `cubic-bezier(0.1, 0.7, 0.2, 1)`; on arrival it jumps to full width and fades out in 200ms; reduced motion → static 90% bar |
 | Overview charts | Recharts (`sparkline.tsx`, `activity-chart.tsx`) | **no animation**: every series has `isAnimationActive={false}`, so reduced-motion users see nothing move either |
 | Heatmap replay | `replay-bar.tsx` (anime.js `animate()`) | the slider value animates linearly to the end, 2s for the full span; dots appear in timestamp order as it passes them; reduced motion → jump to the end |
 

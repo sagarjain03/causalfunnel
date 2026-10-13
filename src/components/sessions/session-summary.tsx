@@ -1,4 +1,5 @@
 import { LocalTime } from "@/components/local-time";
+import { CopySessionId } from "@/components/sessions/copy-session-id";
 import { Card } from "@/components/ui/card";
 import { formatDuration, formatNumber, pathOf } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -23,7 +24,10 @@ export function SessionSummary({ sessionId, events }: { sessionId: string; event
     <Card>
       <div className="flex flex-col gap-1">
         <h2 className="text-lg font-medium">Journey summary</h2>
-        <span className="font-mono text-xs break-all text-muted-foreground">{sessionId}</span>
+        <span className="flex items-center gap-2">
+          <span className="font-mono text-xs break-all text-muted-foreground">{sessionId}</span>
+          <CopySessionId sessionId={sessionId} />
+        </span>
         <span className="text-xs text-muted-foreground">
           Started <LocalTime iso={first.timestamp} withDate />
         </span>

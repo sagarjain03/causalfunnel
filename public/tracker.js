@@ -56,12 +56,52 @@
     send(evt);
   });
 
+  // Static text of a <label>, skipping any select/textarea inside it (their options or contents are not label text).
+  function labelText(label) {
+    var text = "", walker = d.createTreeWalker(label, 4 /* NodeFilter.SHOW_TEXT */);
+    while (walker.nextNode()) {
+      var parent = walker.currentNode.parentNode;
+      if (!(parent && parent.closest && parent.closest("select,textarea"))) text += " " + walker.currentNode.nodeValue;
+    }
+    return text.replace(/\s+/g, " ").trim().replace(/\s*:$/, "");
+  }
+
+  // "Search box" | "Text box" | "Checkbox" | "Radio" | "Dropdown" | "Text area", or null for button-like inputs.
+  function fieldKind(f) {
+    var tag = f.tagName.toLowerCase(), type = (f.getAttribute("type") || "text").toLowerCase();
+    if (tag === "select") return "Dropdown";
+    if (tag === "textarea") return "Text area";
+    if (type === "checkbox") return "Checkbox";
+    if (type === "radio") return "Radio";
+    if (/^(submit|button|reset|image|hidden|file|range|color)$/.test(type)) return null;
+    if (type === "search" || f.closest('[role="search"]')) return "Search box";
+    return "Text box";
+  }
+
+  // A field's name from static page text only: its <label> text, else aria-label, else placeholder. Never its value.
+  function fieldName(f) {
+    var labels = f.labels || [];
+    for (var i = 0; i < labels.length; i++) {
+      var t = labelText(labels[i]);
+      if (t) return t;
+    }
+    return (f.getAttribute("aria-label") || f.getAttribute("placeholder") || "").replace(/\s+/g, " ").trim();
+  }
+
   // Short description of what was clicked: nearest a/button/input/select/textarea/label/[data-cf] (else the element
-  // itself), as tag + #id or .firstClass, plus up to 60 chars of visible text. Never text or values of form fields.
+  // itself). Form fields (and labels of a field) → "Kind: name" (e.g. "Checkbox: Bags & luggage"), else tag#id.
+  // Everything else → tag + #id or .firstClass, plus up to 60 chars of visible text. Never text or values of form fields.
   function describeTarget(el) {
     var hit = el && el.closest ? el.closest("a,button,input,select,textarea,label,[data-cf]") : null;
     var node = hit || el;
     if (!node || !node.tagName) return undefined;
+    var field = hit && (/^(INPUT|SELECT|TEXTAREA)$/.test(hit.tagName) ? hit : hit.tagName === "LABEL" ? hit.control : null);
+    var kind = field && fieldKind(field);
+    if (kind) {
+      var name = fieldName(field).slice(0, 60);
+      if (name) return (kind + ": " + name).slice(0, 140);
+      node = field; // no name: fall back to the field's own tag#id
+    }
     var tag = node.tagName.toLowerCase();
     var cls = typeof node.className === "string" ? node.className.trim().split(/\s+/)[0] : "";
     var desc = tag + (node.id ? "#" + node.id : cls ? "." + cls : "");

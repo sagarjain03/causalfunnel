@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { startNavProgress } from "@/components/dashboard/nav-progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatNumber, pageLabel, pathOf } from "@/lib/format";
 import type { PageSummary } from "@/types";
@@ -13,7 +14,10 @@ export function PageSelect({ pages, page }: { pages: PageSummary[]; page: string
   return (
     <Select
       value={known ? page : undefined}
-      onValueChange={(value) => router.push(`/dashboard/heatmap?page=${encodeURIComponent(value)}`, { scroll: false })}
+      onValueChange={(value) => {
+        startNavProgress();
+        router.push(`/dashboard/heatmap?page=${encodeURIComponent(value)}`, { scroll: false });
+      }}
     >
       <SelectTrigger aria-label="Page" className="glass h-9 min-w-44 rounded-full border-0 bg-transparent px-4 text-sm text-foreground">
         <SelectValue placeholder={pageLabel(page)} />

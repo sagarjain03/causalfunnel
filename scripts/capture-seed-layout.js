@@ -23,11 +23,45 @@ async (page) => {
   // Runs inside the demo page.
   const capture = () => {
     const SEL = "a,button,input,select,textarea,label,[data-cf]";
-    // Same logic as tracker.js describeTarget().
+    // Same logic as tracker.js labelText() / fieldKind() / fieldName() / describeTarget().
+    const labelText = (label) => {
+      let text = "";
+      const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+      while (walker.nextNode()) {
+        const parent = walker.currentNode.parentNode;
+        if (!parent?.closest?.("select,textarea")) text += " " + walker.currentNode.nodeValue;
+      }
+      return text.replace(/\s+/g, " ").trim().replace(/\s*:$/, "");
+    };
+    const fieldKind = (f) => {
+      const tag = f.tagName.toLowerCase();
+      const type = (f.getAttribute("type") || "text").toLowerCase();
+      if (tag === "select") return "Dropdown";
+      if (tag === "textarea") return "Text area";
+      if (type === "checkbox") return "Checkbox";
+      if (type === "radio") return "Radio";
+      if (/^(submit|button|reset|image|hidden|file|range|color)$/.test(type)) return null;
+      if (type === "search" || f.closest('[role="search"]')) return "Search box";
+      return "Text box";
+    };
+    const fieldName = (f) => {
+      for (const label of f.labels || []) {
+        const t = labelText(label);
+        if (t) return t;
+      }
+      return (f.getAttribute("aria-label") || f.getAttribute("placeholder") || "").replace(/\s+/g, " ").trim();
+    };
     const describe = (el) => {
       const hit = el && el.closest ? el.closest(SEL) : null;
-      const node = hit || el;
+      let node = hit || el;
       if (!node || !node.tagName) return undefined;
+      const field = hit && (/^(INPUT|SELECT|TEXTAREA)$/.test(hit.tagName) ? hit : hit.tagName === "LABEL" ? hit.control : null);
+      const kind = field && fieldKind(field);
+      if (kind) {
+        const name = fieldName(field).slice(0, 60);
+        if (name) return (kind + ": " + name).slice(0, 140);
+        node = field;
+      }
       const tag = node.tagName.toLowerCase();
       const cls = typeof node.className === "string" ? node.className.trim().split(/\s+/)[0] : "";
       let desc = tag + (node.id ? "#" + node.id : cls ? "." + cls : "");

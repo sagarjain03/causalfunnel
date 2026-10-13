@@ -161,6 +161,20 @@
     0 6px 16px var(--glass-drop-soft);
 }
 
+/* Navigation progress bar (components/dashboard/nav-progress.tsx): eases towards 90% while a route loads.
+   Reduced motion: the rule below cuts the animation to ~0, so the bar just appears at 90%. */
+@theme {
+  --animate-nav-progress: nav-progress 8s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+  @keyframes nav-progress {
+    from {
+      width: 0;
+    }
+    to {
+      width: 90%;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

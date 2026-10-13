@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { ActivePillNav } from "@/components/dashboard/active-pill-nav";
 import { LiveStatus } from "@/components/dashboard/live-status";
 import { Logo } from "@/components/dashboard/logo";
+import { NavProgress } from "@/components/dashboard/nav-progress";
 import { PillNav } from "@/components/dashboard/pill-nav";
 import { TimezoneSync } from "@/components/dashboard/timezone-sync";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 export default function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   return (
     <TooltipProvider>
+      {/* Reads the URL (useSearchParams), so it streams; the fallback is "no bar". */}
+      <Suspense fallback={null}>
+        <NavProgress />
+      </Suspense>
       <div className="m-4 flex min-h-[calc(100dvh-2rem)] flex-col gap-6 app-glow rounded-frame border border-line bg-app p-3 md:p-6">
         <header className="grid grid-cols-[1fr_auto] items-center gap-3 md:grid-cols-[1fr_auto_1fr]">
           <Logo />

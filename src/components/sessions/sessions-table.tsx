@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { startNavProgress } from "@/components/dashboard/nav-progress";
 import { JourneyPath } from "@/components/sessions/journey-path";
 import { StatusPill } from "@/components/sessions/status-pill";
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,10 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
                 // Whole row navigates; the id cell is the real link for keyboard, middle-click and screen readers.
                 <TableRow
                   key={session.session_id}
-                  onClick={() => router.push(href)}
+                  onClick={() => {
+                    startNavProgress();
+                    router.push(href);
+                  }}
                   className="cursor-pointer border-line hover:bg-panel-raised"
                 >
                   <TableCell>
