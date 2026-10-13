@@ -1,0 +1,74 @@
+# Rules
+
+These are hard rules for anyone (human or AI) writing code in this repo. When a rule conflicts with a "nicer" idea, the rule wins. If a rule seems wrong, ask before breaking it.
+
+## 1. Libraries — use these
+
+| Need | Use | Notes |
+|---|---|---|
+| Primitives (button, table, select, card, badge, tabs, tooltip, sheet, skeleton, sonner) | **shadcn/ui** | `npx shadcn@latest add <name>`. Lives in `src/components/ui`. |
+| Hero / background effects | **Aceternity UI** | Copy into `src/components/aceternity/`. Max 2–3 components total. |
+| Component & layout animation | **motion** | `import { motion } from "motion/react"`. |
+| Heatmap dot reveal, number count-up | **anime.js v4** | `import { animate, stagger } from "animejs"` (named exports, v4 API). |
+| Icons | **lucide-react** | Nothing else. |
+| Validation | **zod** v4 | Every API input. |
+| DB | **mongoose** | Through `src/server/db.ts` only. |
+| Class merging | `cn()` from `@/lib/utils` | Never concatenate class strings by hand. |
+| Dates | `Intl.DateTimeFormat` / `Intl.RelativeTimeFormat` | No date library. |
+
+## 2. Libraries — avoid these
+
+- **axios** → use `fetch`.
+- **moment / dayjs / date-fns** → use `Intl`.
+- **Redux / Zustand / Jotai** → server components + URL search params + local state are enough.
+- **MUI, Chakra, Ant, styled-components, emotion** → conflicts with Tailwind/shadcn.
+- **GSAP, react-spring, AOS** → we already have two animation libs; a third is noise.
+- **Heavy chart libs (Chart.js, Highcharts)** → if a chart is needed, use shadcn charts (Recharts).
+- **heatmap.js or similar** → we draw the heatmap ourselves; that's part of what's being evaluated.
+- **Any package not in `package.json`** → ask before installing. State why it's needed.
+
+## 3. UI & animation rules
+
+- **Data must be readable first.** No animated backgrounds, beams, or sparkles behind tables, timelines, or the heatmap. Aceternity effects only on the overview header and empty states.
+- `motion` = enter/exit, layout, hover. `anime.js` = heatmap dots stagger + stat counters. Do not use both on the same element.
+- Durations: 150–300ms for UI, max 800ms for any reveal. No infinite animations except a "live" pulse dot.
+- Respect `prefers-reduced-motion` (global CSS already does; for JS animations check `window.matchMedia`).
+- Colors come from CSS variables in `globals.css`. **No hex codes in components.**
+- Every list/table has three states: **loading** (Skeleton), **empty** (message + hint to open `/demo`), **error** (message + retry).
+- Mobile works at 375px. Tables become cards or scroll horizontally inside their container.
+
+## 4. Code rules
+
+- TypeScript strict. **No `any`.** Use `unknown` + zod parsing.
+- Server Components by default. Add `"use client"` only for interactivity, and push it as deep as possible.
+- Next.js 16: `params` and `searchParams` are **Promises** — `const { sessionId } = await params`.
+- Cache Components is ON in `next.config.ts`. Do NOT add `export const runtime`, `dynamic`, `revalidate` or `fetchCache` to any route or page — the build fails with them. Node.js is already the default runtime.
+- A GET Route Handler or Server Component that reads the database but no request data (`req`, `params`, `searchParams`, `headers()`) gets prerendered at build time. Call `await connection()` from `"next/server"` first to keep it request-time.
+- Next 16 docs are in `node_modules/next/dist/docs/`. Check them before using any Next.js API (see `AGENTS.md`).
+- Route files stay thin: parse → service → respond. Business logic lives in `src/server/services`.
+- Use `ok()` / `fail()` helpers from `src/server/http.ts` for every response (single envelope).
+- Mongo connection is cached on `globalThis` to survive hot reload. Never call `mongoose.connect` elsewhere.
+- Use `.lean()` on read queries. Sorting is always explicit.
+- File names: `kebab-case.tsx`. Components: `PascalCase`. One component per file.
+- `tracker.js` is plain ES2017, no dependencies, wrapped in an IIFE, under ~3 KB.
+- NEVER run git commit, git push, or any git command that changes history. The user commits manually. When a task is done, suggest a commit message in the format `feat(api): add sessions endpoint` and stop.
+
+## 5. Error handling
+
+### In the app
+- **API:** wrap each handler in `try/catch`. `ZodError` → `400` with the first issue's message. Unknown session → `404`. Anything else → log with `console.error("[api/<route>]", err)` and return `500` with a generic message. **Never leak stack traces or Mongo errors to the client.**
+- **Tracker:** every public function wrapped in `try/catch`; errors are swallowed (optionally `console.debug` when `data-debug` is set). The host page must never break because of us.
+- **Dashboard:** each route segment has `error.tsx` (with retry) and `loading.tsx` (Skeletons). Client fetches show a toast (`sonner`) on failure.
+- **Validation:** reject events with `timestamp` more than 24h in the future, coordinates < 0, or unknown `event_type`. Cap batch size at 50.
+
+### For AI (Claude) working in this repo
+1. **Read `docs/MEMORY.md` first, every session.** Update it when a task is done.
+2. **Do not invent APIs.** If unsure how a library works in its installed version, check `node_modules/<pkg>/package.json` and the types, or ask. anime.js v4, motion, zod v4, Next 16, and Tailwind v4 all changed APIs from older tutorials.
+3. **Do not install packages silently.** Propose it, say why, wait.
+4. **After every change, run `npm run build` (or `npx tsc --noEmit` + `npm run lint`)** and fix errors before saying "done". Never report a task done with failing types or lint.
+5. **When an error appears, read the full message, find the root cause, fix that.** Do not wrap it in `try/catch` to hide it, do not add `// @ts-ignore`, do not use `as any`.
+6. **If the same fix fails twice, stop and explain** what was tried and what the error says, instead of trying a third random variation.
+7. **Stay in the current phase.** Do not build Phase 5 polish while Phase 2 is unfinished.
+8. **Do not edit `docs/` files other than `MEMORY.md`** without asking. They are the spec.
+9. **Never commit `.env.local`** or any secret.
+10. **Keep diffs small.** Change only files related to the task. No drive-by refactors.
