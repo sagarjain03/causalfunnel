@@ -55,3 +55,22 @@ export function formatGap(ms: number): string {
 export function formatNumber(n: number): string {
   return numberFormat.format(n);
 }
+
+const PAGE_LABELS: Record<string, string> = {
+  "products.html": "Products",
+  "product.html": "Product",
+  "checkout.html": "Checkout",
+};
+
+/** Friendly page name for journey paths: …/demo → Home, …/products.html → Products, else the last segment without .html. */
+export function pageLabel(url: string): string {
+  const path = pathOf(url).replace(/\/+$/, "");
+  if (path === "/demo" || path.endsWith("/demo")) return "Home";
+  const last = path.split("/").pop() ?? "";
+  return PAGE_LABELS[last] ?? (last.replace(/\.html$/, "") || "/");
+}
+
+/** "1 journey" / "3 journeys". */
+export function plural(n: number, word: string): string {
+  return `${formatNumber(n)} ${word}${n === 1 ? "" : "s"}`;
+}

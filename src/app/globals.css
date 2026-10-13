@@ -15,14 +15,19 @@
   --text-muted: #8f8f8f;
 
   /* Glass controls (DESIGN.md §5): gradient body, bright top edge, dark bottom edge, soft drop shadow, faint sheen */
-  --glass-top: #262626;
-  --glass-bottom: #111111;
+  --glass-top: rgb(38 38 38 / 0.7); /* #262626 at 70%: lets the app glow show through */
+  --glass-bottom: rgb(17 17 17 / 0.7); /* #111111 at 70% */
+  --glass-blur: 14px;
   --glass-edge: rgb(255 255 255 / 0.07);
   --glass-highlight: rgb(255 255 255 / 0.12);
   --glass-inner-shadow: rgb(0 0 0 / 0.6);
   --glass-drop: rgb(0 0 0 / 0.8);
   --glass-drop-soft: rgb(0 0 0 / 0.45);
   --glass-sheen: rgb(255 255 255 / 0.06);
+
+  /* App glow: two faint radial gradients behind the frame content, so glass has something to refract */
+  --glow-sage: color-mix(in srgb, var(--sage) 5%, transparent);
+  --glow-orange: color-mix(in srgb, var(--orange) 5%, transparent);
 
   /* Data & accent */
   --sage: #9cc5c4;
@@ -130,11 +135,20 @@
     linear-gradient(115deg, var(--glass-sheen) 0%, var(--glass-sheen) 30%, transparent 30.5%),
     linear-gradient(to bottom, var(--glass-top), var(--glass-bottom));
   border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 var(--glass-inner-shadow),
     0 1px 2px var(--glass-drop),
     0 6px 16px var(--glass-drop-soft);
+}
+
+/* Faint fixed glow inside the app frame: sage near the top-left, orange near the top-right. */
+@utility app-glow {
+  background-image:
+    radial-gradient(48rem 32rem at 0% 0%, var(--glow-sage), transparent 70%),
+    radial-gradient(48rem 32rem at 100% 0%, var(--glow-orange), transparent 70%);
+  background-attachment: fixed;
 }
 
 /* Same bevel, sheen and shadow over an existing background color (orange primary button, active nav pill). */

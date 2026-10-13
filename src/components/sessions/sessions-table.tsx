@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { JourneyPath } from "@/components/sessions/journey-path";
 import { StatusPill } from "@/components/sessions/status-pill";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,7 +47,7 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
 
   return (
     <div className="flex flex-col gap-4">
-      {/* overflow-x-auto is only a fallback: below sm the table shows just id, status and last seen. */}
+      {/* overflow-x-auto is only a fallback: below sm the table shows just id, status and last seen; Path needs md. */}
       <div className="-mx-2 overflow-x-auto">
         <Table>
           <TableHeader>
@@ -54,7 +55,7 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
               <TableHead className="text-muted-foreground">Journey</TableHead>
               <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Events</TableHead>
               <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Clicks</TableHead>
-              <TableHead className="hidden text-right text-muted-foreground sm:table-cell">Pages</TableHead>
+              <TableHead className="hidden text-muted-foreground md:table-cell">Path</TableHead>
               <TableHead className="text-muted-foreground">Status</TableHead>
               {/* Below sm the header may wrap ("Last / seen"), so the 3 visible columns fit 375px without a scrollbar. */}
               <TableHead className="text-right whitespace-normal text-muted-foreground sm:whitespace-nowrap">Last seen</TableHead>
@@ -86,8 +87,8 @@ export function SessionsTable({ initialSessions, initialCursor, now }: SessionsT
                   <TableCell className="hidden text-right tabular-nums sm:table-cell">
                     {formatNumber(session.click_count)}
                   </TableCell>
-                  <TableCell className="hidden text-right tabular-nums sm:table-cell">
-                    {formatNumber(session.pages.length)}
+                  <TableCell className="hidden whitespace-normal md:table-cell">
+                    <JourneyPath path={session.path} />
                   </TableCell>
                   <TableCell>
                     <StatusPill reachedCheckout={session.reached_checkout} />

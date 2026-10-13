@@ -114,6 +114,16 @@ button, input, select { font: inherit; }
   background-color: #b9dcd6;
   background-image: var(--img, none), linear-gradient(120deg, #0f8f82, #14b8a6 45%, #f5a623);
 }
+/* Readability overlay for the hero text (WCAG 4.5:1 for white text, measured against the brightest pixel behind it).
+   Sits above the ::after fade and below .copy; stops where the deal cards start so their gaps stay light. */
+.hero::before {
+  content: "";
+  position: absolute; inset: 0 0 170px 0; z-index: 1;
+  background: linear-gradient(90deg, rgba(15, 17, 17, 0.62) 0%, rgba(15, 17, 17, 0.5) 40%, rgba(15, 17, 17, 0) 72%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 40px), transparent);
+  pointer-events: none;
+}
 .hero::after {
   content: "";
   position: absolute; inset: auto 0 0 0; height: 220px;
@@ -250,6 +260,7 @@ button, input, select { font: inherit; }
   .search { order: 10; flex-basis: 100%; }
   .deliver, .hide-md { display: none; }
   .hero .img { height: 300px; }
+  .hero::before { bottom: 110px; }
   .hero .copy { top: 36px; }
   .hero h1 { font-size: 32px; }
   .deals { margin-top: -110px; }
@@ -269,6 +280,7 @@ button, input, select { font: inherit; }
   .offers { grid-template-columns: 1fr 1fr; }
   .two { grid-template-columns: 1fr; }
   .hero h1 { font-size: 26px; }
+  .hero::before { background: linear-gradient(90deg, rgba(15, 17, 17, 0.62), rgba(15, 17, 17, 0.5)); }
   .hero p { font-size: 15px; }
   .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .product { padding: 10px; }

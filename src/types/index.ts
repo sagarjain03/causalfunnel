@@ -27,6 +27,8 @@ export type SessionSummary = {
   pages: string[];
   /** Any event of the session is on a page ending in /checkout.html. */
   reached_checkout: boolean;
+  /** page_url of each page_view in time order, consecutive duplicates collapsed. */
+  path: string[];
 };
 
 export type SessionsPage = {

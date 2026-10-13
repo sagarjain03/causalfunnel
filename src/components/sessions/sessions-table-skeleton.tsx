@@ -8,7 +8,7 @@ export function SessionsTableSkeleton({ rows = 8 }: { rows?: number }) {
           <Skeleton className="h-4 w-20" />
           <Skeleton className="hidden h-4 w-10 sm:block" />
           <Skeleton className="hidden h-4 w-10 sm:block" />
-          <Skeleton className="hidden h-4 w-10 sm:block" />
+          <Skeleton className="hidden h-5 w-56 rounded-full md:block" />
           <Skeleton className="h-5 w-24 rounded-full" />
           <Skeleton className="h-4 w-20" />
         </div>

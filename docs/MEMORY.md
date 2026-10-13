@@ -3,7 +3,7 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** 3.5 Step A + demo store + images + docs sync complete (uncommitted). The events collection is **empty** (0 events, 2026-10-13) — heatmaps start fresh on the new demo layout.
+- **Phase:** 3.5 Step A + demo store + header/path/glow/hero/photo changes complete (uncommitted). DB holds only the user's own fresh session `d8cf13ed…` (25 events, on the new demo layout).
 - **Working on (file):** none
 - **Next step:** Phase 3.5 Step B (ARCHITECTURE §4.1 services, then the bento cards in DESIGN.md §6 "Planned").
 
@@ -43,6 +43,13 @@
   - Journeys table: the shadcn `table-container` scrolled because the table's min width was 296px in a 292px box (the "Last seen" header was `whitespace-nowrap`). That header may now wrap below `sm` ("Last / seen", still 40px tall); the table fits exactly.
   - `/demo` hero: `.hero .copy` had `left: 6%` and no `right`, so the subtitle ran to the screen edge; added `right: 6%` (desktop unchanged: still 460px max-width at left 6%).
   - Verified with 3 temporary `/__test/` journeys (removed with `clean:test`, count back to 0). Re-took `screenshots/journeys-375.png` and `screenshots/demo-home-375.png`.
+- [2026-10-13] Header hierarchy, journey paths, app glow, hero contrast, product photos (uncommitted):
+  - Removed the greeting + date pill (`greeting.tsx` deleted). New `PageTitle` (24px/500 h1 + one muted sentence of DB numbers, streamed). Overview: "{n} journeys and {m} events. Last activity …" (`getOverviewStats` + `getLastEventAt`). Journeys: "{n} journeys, {k} reached checkout." (new `getJourneyStats()`). The Journeys card lost its own title.
+  - Journeys **Path** column (md+): `listSessions` now starts with `$sort { timestamp: 1 }` and `$push`es page_view URLs; `collapseRepeats()` in the service; `pageLabel()` in `lib/format.ts` (path ending `/demo` → Home, products/product/checkout.html → labels); max 4 glass chips + "+n". The "Pages" column was removed. `SessionSummary.path` added (also in the `/api/sessions` output).
+  - `app-glow` utility (two 5% radial gradients, fixed) on the frame; `glass` is now translucent (70%) + `backdrop-filter: blur(14px) saturate(140%)`, so the glow shows through (it was opaque before, so nothing could refract).
+  - Demo hero: `.hero::before` overlay (`--ink` 62% → 50% → 0), above the bottom fade, stopping where the deal cards start. Worst-case white text contrast is 5.0–6.0:1 at 375 and 1280.
+  - Replaced `p-2` (headphones on black → on white, Jukka Aalho, 6pV3qV4HRVw) and `p-1c` (backpack on a street → on a white wall, Sarah Noltner, 7TJO_T1SP_E); CREDITS.md updated.
+  - Verified at 375 / 820 / 1280: the journeys table never scrolls (292/292 at 375). Screenshots used 4 temporary `/__test/demo/…` journeys (removed with `clean:test`, 30 events).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -72,6 +79,8 @@
 - **Charcoal + glass (2026-10-13, user request mid-Step-A, with a reference image of glossy dark pill buttons):** the background is deep black (`--frame #000`, `--app #0A0A0A`); surfaces are neutral charcoal a step lighter (`--panel #141414`, `--panel-raised #1C1C1C`, `--line #262626`). Glass (`glass` / `glass-shine` utilities, `--glass-*` tokens) is on **controls only** (nav, Live/date pills, buttons, chips, status pills), never on cards. The user chose "controls only". Sage and orange are unchanged. `ui/button.tsx`: default = `glass-shine` on orange, outline = `glass`, and `transition-all` removed.
 - - Demo store: one shared stylesheet (`/demo/store.css`) instead of one inline `<style>` per page (4 pages share the header and footer). The hero is static (no auto-carousel) and all products link to one `product.html?id=n`, whose query is stripped by `normalizePageUrl`, so it's one heatmap page. Old `/demo*` click data was recorded on the previous layouts and won't line up with the new ones.
 - Turbopack dev cache: after `globals.css` changes the dev server once kept serving the old CSS even after a restart; fixed by stopping it and deleting `.next/dev`.
+- **/demo cleanup (task 5, 2026-10-13):** already done earlier (92 events deleted). New `/demo` events from the user's own browser (session `d8cf13ed…`, 1536px viewport, 17:10–17:11 UTC) were NOT deleted, because they are fresh data on the new layout.
+- Turbopack dev cache served stale `globals.css` again after the glass/glow edits; fixed by stopping dev, deleting `.next/dev`, and restarting. If CSS changes don't appear in dev, do the same.
 - **Docs = code (2026-10-13, user request):** DESIGN.md/RULES.md now describe the UI exactly as built. Don't change colors, layout, spacing, fonts, copy or styling unless asked; if code and docs differ, fix the docs or ask. Existing shadcn/sonner motion (skeleton pulse, table-row colour fade, toasts) is documented and kept as-is.
 - **Font: Onest, not General Sans.** General Sans' ITF Free Font License v2.0 §02 forbids distributing the files via a "repository" or "publicly accessible servers" (a public GitHub repo). Onest loads through `next/font/google`, so `next build` now needs network access once to fetch it (Phase 0 had avoided that).
 - Page preview iframe: `sandbox="allow-scripts"` **without** `allow-same-origin` (opaque origin: the page can't touch our cookies/storage/DOM), `referrerPolicy="no-referrer"`, `pointer-events-none`, `?cf_preview=1`. For a click step it's rendered at the click's own `viewport_w × page_h`, so the dot lands on the clicked element; the card scrolls to it.

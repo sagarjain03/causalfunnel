@@ -31,11 +31,40 @@ function decodeCursor(cursor: string): Cursor {
   throw new HttpError(400, "invalid_cursor", "cursor is invalid");
 }
 
+/** Drops consecutive duplicates (a reload or SPA re-render of the same page is one step): [a, a, b, a] → [a, b, a]. */
+function collapseRepeats(urls: string[]): string[] {
+  return urls.filter((url, i) => url !== urls[i - 1]);
+}
+
+/** Number of journeys and how many of them reached a page ending in /checkout.html. */
+export async function getJourneyStats(): Promise<{ journeys: number; reachedCheckout: number }> {
+  await connectDb();
+  const [row] = await EventModel.aggregate<{ journeys: number; reachedCheckout: number }>([
+    {
+      $group: {
+        _id: "$session_id",
+        reached: { $max: { $regexMatch: { input: "$page_url", regex: /\/checkout\.html$/ } } },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        journeys: { $sum: 1 },
+        reachedCheckout: { $sum: { $cond: ["$reached", 1, 0] } },
+      },
+    },
+    { $project: { _id: 0, journeys: 1, reachedCheckout: 1 } },
+  ]);
+  return row ?? { journeys: 0, reachedCheckout: 0 };
+}
+
 /** Sessions derived from events, newest activity first, keyset-paginated on (last_seen, session_id). */
 export async function listSessions({ limit, cursor }: { limit: number; cursor?: string }): Promise<SessionsPage> {
   const after = cursor ? decodeCursor(cursor) : null;
 
   const pipeline: PipelineStage[] = [
+    // Time order first, so $push below builds each session's path in visit order.
+    { $sort: { timestamp: 1, _id: 1 } },
     {
       $group: {
         _id: "$session_id",
@@ -47,6 +76,8 @@ export async function listSessions({ limit, cursor }: { limit: number; cursor?: 
         pages: { $addToSet: "$page_url" },
         // true if any event is on the checkout page ($max over booleans: true > false)
         reached_checkout: { $max: { $regexMatch: { input: "$page_url", regex: /\/checkout\.html$/ } } },
+        // page_url of every page_view in time order (null for clicks, filtered out below)
+        path: { $push: { $cond: [{ $eq: ["$event_type", "page_view"] }, "$page_url", null] } },
       },
     },
     {
@@ -60,6 +91,7 @@ export async function listSessions({ limit, cursor }: { limit: number; cursor?: 
         last_seen: 1,
         pages: 1,
         reached_checkout: 1,
+        path: { $filter: { input: "$path", cond: { $ne: ["$$this", null] } } },
       },
     },
   ];
@@ -83,6 +115,7 @@ export async function listSessions({ limit, cursor }: { limit: number; cursor?: 
   return {
     sessions: page.map((row) => ({
       ...row,
+      path: collapseRepeats(row.path),
       first_seen: row.first_seen.toISOString(),
       last_seen: row.last_seen.toISOString(),
     })),

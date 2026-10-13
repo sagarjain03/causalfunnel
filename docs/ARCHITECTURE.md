@@ -88,7 +88,8 @@ All responses use one envelope:
 | `GET` | `/api/pages` | — | `{ data: { page_url, clicks, views }[] }` |
 
 ```ts
-type SessionSummary = { session_id; event_count; click_count; page_view_count; first_seen; last_seen; pages: string[]; reached_checkout: boolean }
+type SessionSummary = { session_id; event_count; click_count; page_view_count; first_seen; last_seen; pages: string[]; reached_checkout: boolean; path: string[] }
+// path: page_url of each page_view in time order (pipeline starts with $sort { timestamp: 1 }, then $push in $group), consecutive duplicates collapsed in the service
 type ClickPoint = { x; y; viewport_w; page_h }
 ```
 
@@ -105,7 +106,9 @@ The Overview bento (DESIGN.md §6) is rendered by Server Components that call th
 | `getClickGrid(timeZone)` | `heatmap.ts` | `{ cells: { day: 1..7, bucket: 0..11, clicks: number }[], max: number }` (ISO weekday, Mon = 1; bucket = 2-hour block) | `$match` clicks in the last 28 days, `$group` by `{ $isoDayOfWeek: { date, timezone } }` and `{ $floor: { $divide: [{ $hour: { date, timezone } }, 2] } }`. |
 | `getLatestJourney(limit = 8)` | `sessions.ts` | `{ session_id, events: EventDto[] } \| null`: the session with the newest event, and its last `limit` events in time order | `$sort { timestamp: -1 }` + `$limit 1` (uses the `{ timestamp: -1 }` index) to find the session, then that session's events via the `{ session_id, timestamp }` index. |
 | `getTopPages(limit = 5)` | `heatmap.ts` | `PageSummary[]` sorted by clicks desc (feeds Top pages; `[0]` feeds the heatmap preview) | The same `$group` as `listPages()`, sorted `{ clicks: -1, page_url: 1 }`, `$limit`. |
-| `reached_checkout` in `listSessions()` | `sessions.ts` | A new boolean on every `SessionSummary` | In the existing `$group`: `reached_checkout: { $max: { $regexMatch: { input: "$page_url", regex: "/checkout\.html$" } } }`. |
+| `getJourneyStats()` (Built) | `sessions.ts` | `{ journeys, reachedCheckout }` for the Journeys page sentence | Two `$group` stages: per session (`$max` of the checkout `$regexMatch`), then totals. |
+| `getLastEventAt()` (Built) | `stats.ts` | Newest event time (Live/Idle pill, Overview sentence) | `findOne().sort({ timestamp: -1 })` on the `{ timestamp: -1 }` index. |
+| `reached_checkout` in `listSessions()` (Built) | `sessions.ts` | A new boolean on every `SessionSummary` | In the existing `$group`: `reached_checkout: { $max: { $regexMatch: { input: "$page_url", regex: "/checkout\.html$" } } }`. |
 
 The heatmap preview's dots reuse `getHeatmap(topPage.page_url)`, filtered to `viewport_w ≥ 768`. "Recent journeys" reuses `listSessions({ limit: 5 })`.
 

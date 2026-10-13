@@ -61,7 +61,13 @@ Clicks are the one data category drawn in orange, because a click is the event t
 A cell's color is picked by `count / maxCount`. Zero is transparent, so only the cell's `--line` outline shows.
 
 ### Glass tokens (Built)
-`--glass-top #262626`, `--glass-bottom #111111`, `--glass-edge` white 7%, `--glass-highlight` white 12%, `--glass-inner-shadow` black 60%, `--glass-drop` black 80%, `--glass-drop-soft` black 45%, `--glass-sheen` white 6%. See §5 "Glass controls".
+- **Body and edges:** `--glass-top` `#262626` at 70% and `--glass-bottom` `#111111` at 70% (translucent), `--glass-edge` white 7%, `--glass-highlight` white 12%.
+- **Shadows:** `--glass-inner-shadow` black 60%, `--glass-drop` black 80%, `--glass-drop-soft` black 45%.
+- **Sheen and blur:** `--glass-sheen` white 6%, `--glass-blur` 14px.
+- See §5 "Glass controls".
+
+### App glow tokens (Built)
+`--glow-sage` = `--sage` at 5%, `--glow-orange` = `--orange` at 5%. They're used only by the `app-glow` utility on the app frame (§5); this is the only decorative background.
 
 ### Orange budget
 Orange appears only on:
@@ -127,7 +133,8 @@ Planned bar styles:
 
 | Use | Spec in code |
 |---|---|
-| Greeting | `h1`, 300 weight, 32px (40px from `md`), tight tracking |
+| Page title | `h1`, **24px, 500 weight** (`text-2xl font-medium`), tight tracking |
+| Page summary sentence | 14px, `--text-muted`, one sentence of live numbers under the title |
 | Big numbers, Overview tiles | 300 weight, 40px (48px from `md`), `tabular-nums`, `leading-none`. The label sits **above** the number, next to the icon square (`text-sm`, `--text-muted`). |
 | Big numbers, journey summary tiles | 300 weight, 32px, `tabular-nums`, `leading-none` |
 | Card title | 500 weight, 18px (`text-lg font-medium`) |
@@ -147,7 +154,11 @@ Rules:
 ### Frame
 - `body` is `--frame` (pure black).
 - The app is one rounded container: `--app` background, **28px radius** (`rounded-frame`), **16px margin** from the window (`m-4`), 1px `--line` border, min-height = viewport − 32px.
-- Inside the frame: padding of 12px (24px from `md`), with a 24px gap between the top bar, the greeting and `main`. Inside `main`, sections are 16px apart.
+- Inside the frame: padding of 12px (24px from `md`), with a 24px gap between the top bar and `main`. Inside `main`, sections are 16px apart.
+- **App glow** (`app-glow` utility on the frame) gives the glass controls something to refract. It's two very faint radial gradients over `--app`, fixed to the viewport (`background-attachment: fixed`):
+  - `--glow-sage`, a 48×32rem ellipse at the top-left
+  - `--glow-orange`, the same at the top-right
+  - Nothing else changes color.
 
 ### Radius tokens
 `rounded-icon` 10px · `rounded-tile` 16px · `rounded-card` 22px · `rounded-frame` 28px. Pills and buttons are `rounded-full`.
@@ -166,10 +177,15 @@ A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is 
   - **"Open demo store":** an orange primary pill button (36px tall, `glass-shine`), a plain `<a href="/demo">`. **Hidden below `sm`** (640px).
 - No sidebar, no hamburger, no sheet.
 
-### Greeting row (Built)
-- **Left:** `Hello` + `, good morning` / `, good afternoon` / `, good evening` in `--text-muted` (before 12, before 17, otherwise; the viewer's local clock).
-- **Right:** a **date pill** (`glass`, 36px tall, **fixed 128px wide**, 14px muted), e.g. `Tue, Oct 13`, using the browser's locale.
-- The server renders only `Hello` and an empty pill; the client fills both in after hydration (`useSyncExternalStore`). Fixed sizes mean nothing shifts.
+### Page title (Built)
+There's no greeting and no date pill. Each page starts with `PageTitle` (`components/dashboard/page-title.tsx`): an `h1` (24px/500) and **one muted sentence of real data** under it. The sentence streams behind `<Suspense>`, with a 20×256px skeleton line while it loads.
+- **Overview:** `{n} journeys and {m} events. Last activity {relative time}.`
+  - `n` and `m` come from `getOverviewStats()`; the last activity from `getLastEventAt()`.
+  - It says "No activity yet." when there are no events.
+- **Journeys:** `{n} journeys, {k} reached checkout.`, from `getJourneyStats()`.
+- **Heatmap** (Planned, Phase 4): the title "Heatmap" plus a sentence of real click data, wording decided in Phase 4.
+- **Journey detail:** no page title; it keeps its "← All journeys" link and the summary card.
+- Singular and plural come from `plural()` ("1 journey", "2 journeys").
 
 ### Cards
 - shadcn `Card`, restyled in `ui/card.tsx`: `--panel` background, 1px `--line` border, **22px radius**, **20px padding**, 16px gap between children, **no shadow**.
@@ -184,23 +200,24 @@ A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is 
 ### Glass controls (Built)
 Glossy charcoal glass (from the user's reference) is used on **controls only**:
 - the pill navbar and its active pill
-- the Live/Idle pill and the date pill
+- the Live/Idle pill
 - buttons
-- the "Pages visited" chips and the status pills
+- the "Pages visited" chips, the Journeys **Path** chips and the status pills
 - Planned: the Phase 4 heatmap toolbar
 
 **Never on cards, the frame, or anything behind data.**
 
 There are two utilities in `globals.css`:
 - **`glass`:**
-  - a top-to-bottom gradient `--glass-top` → `--glass-bottom`
+  - a translucent (70%) top-to-bottom gradient `--glass-top` → `--glass-bottom`
+  - `backdrop-filter: blur(14px) saturate(140%)`, so the app glow behind the control shows through softly
   - a 115° sheen band (white 6%, sharp edge at 30%)
   - a 1px edge at white 7%
   - an inset top highlight (white 12%) and an inset bottom shadow (black 60%)
   - a drop shadow of `0 1px 2px` black 80% plus `0 6px 16px` black 45%
 - **`glass-shine`:** the same sheen, bevel and shadow over an existing background color.
 
-No `backdrop-filter`. Glass controls are the only elements with shadows.
+`backdrop-filter` appears only in the `glass` utility. Glass controls are the only elements with shadows.
 
 ### Buttons (`ui/button.tsx`)
 - **Default (primary):** orange, `glass-shine`, dark text; hover is orange at 90%.
@@ -209,6 +226,7 @@ No `backdrop-filter`. Glass controls are the only elements with shadows.
 
 ### Chips & pills
 - **Page chip** ("Pages visited"): `glass`, full radius, 12px text, 4×10px padding.
+- **Path chip** (Journeys table): `glass`, full radius, 12px text, 2×8px padding. Shows a friendly page label (§7).
 - **Status pill** (Journeys table): `glass`, 12px text, 2×10px padding.
   - "Reached checkout": `--sage` text (any event on a page ending `/checkout.html`).
   - "Browsing": `--text-muted` text.
@@ -224,6 +242,7 @@ No `backdrop-filter`. Glass controls are the only elements with shadows.
 ## 6. Overview
 
 ### Built (Phase 3.5 Step A)
+- **Page title** "Overview" + its summary sentence (§5).
 - A 12-column grid (1 column below `lg`), 16px gap.
 - **"Totals" card** (`lg:col-span-4`): 2×2 raised tiles with a 12px gap: **Sessions, Events, Clicks, Pages tracked**. These are **all-time** totals from `getOverviewStats()`.
   - Each tile: an icon square (`--panel`) + a muted label on one row, then the big number.
@@ -257,13 +276,20 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
 ## 7. Other pages
 
 ### Journeys `/dashboard/journeys` (Built)
-- **One card:** title "Journeys" + "Every visitor session, most recent activity first."
+- **Page title** "Journeys" + its summary sentence (§5), then **one card** holding only the table (no card title).
 - **Table columns:**
   - **Journey:** 8-char Geist Mono id, `text-xs`; a link that turns sage on hover; tooltip with the full id.
-  - **Events, Clicks, Pages:** right-aligned `tabular-nums`; **hidden below `sm`**.
+  - **Events, Clicks:** right-aligned `tabular-nums`; **hidden below `sm`**.
+  - **Path:** the page sequence as glass path chips joined by a muted `→`, e.g. `Home → Products → Product → Checkout`.
+    - At most **4 chips**, then a muted `+n`. Chips wrap inside the cell.
+    - Hovering shows the full URL sequence.
+    - **Hidden below `md`.**
+    - Comes from `SessionSummary.path`: the `page_url` of each page_view in time order, with consecutive duplicates collapsed in the service.
+    - Labels come from `pageLabel()`: a path ending in `/demo` → Home, `products.html` → Products, `product.html` → Product, `checkout.html` → Checkout, anything else → its last segment without `.html`.
+    - There's no "Pages" count column any more.
   - **Status:** the glass status pill.
   - **Last seen:** right-aligned, muted. From `sm` up it's the long form ("4 minutes ago"); below `sm` it's the narrow form ("4m ago"). Hover shows the ISO time.
-- **Below `sm`** only **Journey, Status, Last seen** show, and the table fits 375px with no scrolling (`overflow-x-auto` is only a fallback). The "Last seen" header may wrap to two lines below `sm`.
+- **Below `sm`** only **Journey, Status, Last seen** show (Path also needs `md`), and the table fits 375px with no scrolling (`overflow-x-auto` is only a fallback). The "Last seen" header may wrap to two lines below `sm`.
 - **Rows:** the whole row is clickable, with a `--line` divider and `--panel-raised` hover.
 - **Footer:** "N journeys shown" (12px muted) on the left; an outline glass **"Load more"** on the right, hidden when there's no next page. If loading fails, a sonner toast says "Could not load more journeys".
 - **Empty:** an empty state inside the card (no border or background of its own): "No journeys yet" + "Open demo store".
@@ -334,6 +360,7 @@ All other hover changes are instant: the transitions were removed from buttons, 
 
 ### Rules
 - **Static:** no JavaScript except `tracker.js`. No carousels or randomized sections, so heatmap positions are stable.
+- **Product photos** (`p-*.jpg`) all have a plain white or light-grey studio-style background, so the catalog looks consistent (`p-2` and `p-1c` were replaced for this).
 - **Images:** every image is a CSS `background-image` on a fixed-size box (`.img`, with `aspect-ratio` or a fixed height). There are **no `<img>` elements**, so layout is identical before and after images load (verified with Playwright: 0 element boxes move). Missing images show a light tile.
   - The files live in `public/demo/img/` (free Unsplash License photos, credited in `img/CREDITS.md`).
 - **Tests and screenshots must use `?cf_preview=1`** on demo URLs so the tracker sends nothing.
@@ -365,7 +392,12 @@ The back-to-top bar is `#37474F`. Image placeholder tiles: `#F3F4F4` (cover) and
   - "Hello, sign in / Account & Lists", "Returns & Orders", and a cart with a teal count
   - then a 40px **category strip** (`--ink-2`): "☰ All", Fresh, Today's Deals, …, Customer Service; it scrolls sideways when narrow.
 - **`/demo`:**
-  - a 420px hero (`hero.jpg`, teal → gold gradient behind it; the text block sits between `left: 6%` and `right: 6%`, max 460px wide) with "The Festive Edit is live", a sentence and a gold "Shop the sale"; it fades into the page
+  - a 420px hero (`hero.jpg`, teal → gold gradient behind it; the text block sits between `left: 6%` and `right: 6%`, max 460px wide)
+  - **Readability overlay:** `.hero::before`, `--ink`-colored, between the bottom fade and the text.
+    - **Desktop:** a horizontal gradient from 62% → 50% (at 40%) → 0 (at 72%).
+    - **≤600px:** full width, 62% → 50%.
+    - It stops where the deal cards start (170px from the bottom, 110px at ≤860px), with a 40px soft edge.
+    - **Measured:** white text's worst-case contrast against the brightest pixel behind it is 5.3–6.0:1 at 1280px and 5.0–5.6:1 at 375px (target ≥ 4.5:1). with "The Festive Edit is live", a sentence and a gold "Shop the sale"; it fades into the page
   - **4 deal cards** overlapping the hero by 170px: Trending deals, Under ₹299, Up to 60% off | Self-care & home, and Sign in. Each holds a 2×2 image grid and a "See …" link.
   - a "Best sellers in Sports & Outdoors" row that scrolls inside its card
   - "Back to top" and the footer
