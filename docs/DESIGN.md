@@ -335,7 +335,7 @@ Desktop is a 12-column grid with a 16px gap. Every number comes from the service
     - **Width:** rendered at the width's `render_w`, i.e. the clicks' **layout width** (`layout_w` = viewport minus scrollbar), falling back to `viewport_w` for older clicks.
     - **Height:** the tallest `page_h` among those clicks.
     - **Scaling:** scaled to the card with `transform: scale()`, in a scroll box (max 70vh). Dots and grid share the scaled box: page (x, y) → (x, y) × scale.
-  - **Dots:** 10px `--event-click` dots at 55% opacity with `mix-blend-mode: screen`, so overlaps get brighter.
+  - **Dots:** 10px dots, normal blending: `--event-click` fill at 80%, a 1px `--text` (light) inner ring and a 1px `--app` (dark) outer ring (`DOT_STYLE` in `heatmap-overlay.tsx`). They stay visible on any page background. Overlaps don't brighten; density is what Grid mode is for. The legend's sample dot uses the same style.
   - **Grid:** 24×24 **page-pixel** cells (scaled with the page). Each cell gets `heat-1…4` by count / maxCount (≤25%, ≤50%, ≤75%, above), at 70% opacity; empty cells are transparent.
   - **Legend** (12px muted):
     - **Grid:** real min cell count, the heat ramp bar, real max, then "clicks per 24px cell".

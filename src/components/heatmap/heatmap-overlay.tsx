@@ -8,6 +8,15 @@ const DOT = 10;
 
 export type GridCell = { cx: number; cy: number; count: number };
 
+/**
+ * One click: orange at 80% with a 1px light inner ring and a 1px dark outer ring, normal blending, so it stays visible
+ * on any page background (light or dark). Density is what Grid mode is for.
+ */
+export const DOT_STYLE = {
+  background: "color-mix(in srgb, var(--event-click) 80%, transparent)",
+  boxShadow: "inset 0 0 0 1px var(--text), 0 0 0 1px var(--app)",
+} as const;
+
 /** Clicks bucketed into CELL×CELL page-pixel cells. */
 export function buildGrid(clicks: ClickPoint[]): GridCell[] {
   const counts = new Map<string, GridCell>();
@@ -59,11 +68,11 @@ export function HeatmapOverlay({ mode, clicks, cells, maxCount, scale }: Heatmap
   return (
     <div className="pointer-events-none absolute inset-0" aria-hidden>
       {clicks.map((c, i) => (
-        // Semi-transparent with screen blending, so overlapping clicks glow brighter.
         <span
           key={`${c.timestamp}-${i}`}
-          className="absolute rounded-full bg-event-click opacity-55 mix-blend-screen"
-          style={{ left: c.x * scale - DOT / 2, top: c.y * scale - DOT / 2, width: DOT, height: DOT }}
+          data-heat-dot
+          className="absolute rounded-full"
+          style={{ ...DOT_STYLE, left: c.x * scale - DOT / 2, top: c.y * scale - DOT / 2, width: DOT, height: DOT }}
         />
       ))}
     </div>

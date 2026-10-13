@@ -1,3 +1,4 @@
+import { DOT_STYLE } from "@/components/heatmap/heatmap-overlay";
 import type { HeatmapMode } from "@/components/heatmap/mode-toggle";
 import { formatNumber, plural } from "@/lib/format";
 
@@ -14,7 +15,7 @@ export function HeatLegend({ mode, shown, minCount, maxCount }: HeatLegendProps)
   if (mode === "dots") {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="size-2.5 rounded-full bg-event-click opacity-55" aria-hidden />
+        <span className="size-2.5 rounded-full" style={DOT_STYLE} aria-hidden />
         <span>1 dot = 1 click · {plural(shown, "click")} shown</span>
       </div>
     );

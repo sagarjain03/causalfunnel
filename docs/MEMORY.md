@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** Phase 4 heatmap built + verified (uncommitted). **Open question for the user:** dot visibility on light pages (see Known issues).
+- **Phase:** Phase 4 heatmap built + verified (uncommitted). Dot style decided (normal blend + rings).
 - **Working on (file):** none
-- **Next step:** user's decision on dot visibility → then Phase 3.5 Step B (ARCHITECTURE §4.1 services, bento cards).
+- **Next step:** Phase 3.5 Step B (ARCHITECTURE §4.1 services, bento cards).
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -59,6 +59,7 @@
   - First "Add to cart" in the rendered page: x 308–567, y 615–654 (page px). Both user clicks aimed at it (with `layout_w`) land **inside** it, 20px and 25px from its centre; on screen (scale 0.74) both drawn dots are inside the button's drawn box.
   - The other 11 clicks land on what they plausibly targeted: category links (6, old clicks without `layout_w`), filter checkboxes (4), the first product image (1).
   - Screenshots: `screenshots/heatmap-1280.png`, `heatmap-375.png`, `heatmap-closeup-1280.png`.
+- [2026-10-14] Heatmap dot style (user decision): normal blending, orange fill at 80% + 1px light inner ring (`--text`) + 1px dark outer ring (`--app`), replacing 55% + `mix-blend-mode: screen`, which was nearly invisible on light pages. Re-took `screenshots/heatmap-1280.png` and `heatmap-closeup-1280.png`; both "Add to cart" dots are still inside the drawn button and clearly visible.
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
@@ -118,5 +119,4 @@
 - The Atlas password was once in `.env.example` (never committed; it now holds placeholders). Rotate it before deploying.
 - All manual test clicks so far were made with DevTools docked, at `viewport_w` ≈ 618px, so they fall in the mobile (<768px) bucket. An empty Desktop heatmap in Phase 4 is expected until desktop-width clicks are generated. This is not a bug.
 - [Done 2026-10-13, user said yes] Deleted all `/demo*` events (old layouts) incl. sessions `414d002c…` and `ad0e7dc5…`: 92 events, collection now 0.
-- **Heatmap dots are hard to see on light pages:** the spec (orange, 55% opacity, `mix-blend-mode: screen`) lightens on white/teal backgrounds, so dots on the demo store look like faint smudges. Positions are correct. Needs a user decision (e.g. normal blend or multiply + a dark ring) before changing the design.
 - The build warns about a stray `D:\pnpm-lock.yaml` outside the repo (harmless; delete it or set `turbopack.root`).
