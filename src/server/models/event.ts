@@ -14,7 +14,7 @@ const eventSchema = new Schema(
     viewport_h: Number,
     page_h: Number,
     layout_w: Number, // document.documentElement.clientWidth (viewport minus scrollbar); missing on older clicks
-    target: String, // clicked element: tag + #id/.class + up to 60 chars of visible text (tracker v3+)
+    target: String, // clicked element (tracker v3+): form fields "Kind: label" (v4+), else tag + #id/.class + up to 60 chars of visible text
     // optional context
     referrer: String,
     user_agent: String,

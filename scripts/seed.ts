@@ -3,6 +3,7 @@
 //   npm run seed                                   re-seed (removes old seed data first), page URLs on http://localhost:3000
 //   npm run seed -- --origin https://app.example   page URLs on another origin (so deployed previews load)
 //   npm run seed -- --clear                        remove seed data only
+//   npm run seed:prod -- --origin https://app.example   same, against .env.production.local; --origin is required
 //
 // Click coordinates come from scripts/seed-layout.json: real element boxes captured from the demo store with Playwright
 // (scripts/capture-seed-layout.js), so every seeded click lands on the element its `target` names.
@@ -57,6 +58,12 @@ const REFERRERS = ["https://www.google.com/", "https://www.google.com/", "https:
 // --- args -------------------------------------------------------------------------------------------------------------
 const args = process.argv.slice(2);
 const clearOnly = args.includes("--clear");
+// seed:prod passes --require-origin: seeding a deployed database with localhost URLs would make the heatmap
+// preview load pages that do not exist there, so it refuses to run without an explicit --origin.
+if (args.includes("--require-origin") && !args.some((a) => a === "--origin" || a.startsWith("--origin="))) {
+  console.error("seed:prod needs the deployed site's origin: npm run seed:prod -- --origin https://your-app.example");
+  process.exit(1);
+}
 function originFromArgs(): string {
   const eq = args.find((a) => a.startsWith("--origin="));
   if (eq) return eq.slice("--origin=".length);
@@ -205,7 +212,7 @@ function journey(plan: Plan, now: number): SeedEvent[] {
 // --- run ---------------------------------------------------------------------------------------------------------------
 async function main() {
   const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error("MONGODB_URI is not set (expected in .env.local)");
+  if (!uri) throw new Error("MONGODB_URI is not set (expected in .env.local, or .env.production.local for seed:prod)");
   await mongoose.connect(uri);
   const events = mongoose.connection.collection<SeedEvent>("events");
   await events.createIndex({ source: 1 }, { sparse: true });

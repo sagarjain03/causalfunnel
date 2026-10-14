@@ -3,9 +3,9 @@
 > Claude: read this first every session. Update it after every completed task.
 
 ## Current status
-- **Phase:** Polish pass done (uncommitted). Overview rebuild committed (a8510d0). DB: 89 real events + 2,983 seed events (150 seeded journeys, re-seeded with tracker v4 targets).
+- **Phase:** Submission prep done (uncommitted): README rewrite, `seed:prod`. Polish pass and Overview rebuild are committed. DB: 89 real events + 2,983 seed events (150 seeded journeys, re-seeded with tracker v4 targets).
 - **Working on (file):** none
-- **Next step:** user review of the polish pass, then commit. Then README: add seeding steps (`npm run seed`, `--origin`, `--clear`, Node 22.6+ for seeding), the `target` field in the API section, and the tracker size (~5 KB). Then Phase 3.5 Step B.
+- **Next step:** user review + commit; deploy, then replace `LIVE_URL` in README.md and run `npm run seed:prod -- --origin <deployed origin>`.
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -88,6 +88,13 @@
   - Bounce pill verified on real data: 7d "↓ 4.6 pp" green, 14d "↑ 4.7 pp" red (conversion the other way round).
   - Tracker v4 (`?v=4` on all demo pages): form fields → "Kind: name" from label → aria-label → placeholder (static text only), labels of a field describe that field, fallback tag#id (RULES §4 tracker privacy). Same rule in `capture-seed-layout.js`; re-captured `seed-layout.json` and re-seeded (150 journeys, 2,983 events, 2,599 clicks, same funnel shares). Verified the real `tracker.js` code (evaluated on the `?cf_preview=1` pages, nothing sent) produces the same 27 field names as the capture, e.g. "Search box: Search Northwind" (the hidden label wins over the placeholder; demo markup unchanged by decision), "Checkbox: Bags & luggage" (24 seeded clicks), "Dropdown: Sort by", "Radio: Cash on delivery". 0 old-style field targets left in seed data; real events keep their old targets.
   - Screenshots: `overview-1280.png` (full page), `404-1280.png`, `journey-detail-1280.png` (viewport; the full page is 8,700px tall).
+
+- [2026-10-14] Submission prep (uncommitted):
+  - `npm run seed:prod`: same as `seed` but `--env-file=.env.production.local` (gitignored by `.env*`, verified with `git check-ignore`) and `--require-origin`, so it exits 1 without `--origin` (also with `--clear`). Tested with a temporary dummy env file (removed): no origin → refused; with origin → past the check. Node itself refuses when the env file is missing.
+  - README.md rewritten for reviewers (summary with `LIVE_URL` placeholders, 6 screenshots, Mermaid flow, features, stack, setup incl. Node 22.6+ / seed / seed:prod / smoke / clean:test, embedding with `data-endpoint` and `?v=`, full API reference incl. `target` and `layout_w`, data model + indexes incl. sparse `source`, trade-offs, structure, next steps).
+  - Retook `journeys-1280.png` (viewport), `heatmap-1280.png` and `heatmap-closeup-1280.png` (they predated the seed data and the latest UI), then copied overview, journeys, journey-detail, heatmap, heatmap-closeup and 404 into `docs/images/`.
+  - Noted for the README: `GET /api/sessions/{id}/events` returns `target` but not `layout_w` (the heatmap endpoint has both); tracker is ~7 KB unminified.
+  - Updated the stale `target` comments in `validation.ts` and `models/event.ts` (comments only).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
