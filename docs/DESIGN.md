@@ -168,6 +168,7 @@ Rules:
 ### Top bar
 A grid `[logo] [nav] [status + button]` from `md`. Below `md`, the first row is logo + status and the nav takes a full-width second row.
 - **Logo:** a 28px orange rounded square with a 10px `--app` dot inside, plus "CausalFunnel" (18px/500). Links to `/dashboard`.
+- **Favicon:** the same mark as `src/app/icon.svg` (Next.js file convention; hex copies of `--orange` / `--app`, since an SVG file can't read CSS tokens). The scaffold `favicon.ico` was removed. The static demo pages declare no icon.
 - **Pill navbar** (centered): a `glass` pill, 4px padding, with Overview / Journeys / Heatmap (14px, 6×16px item padding).
   - **Active item:** a `bg-panel-raised` + `glass-shine` pill behind it that **slides** between items (motion `layoutId="nav-pill"`, spring 0.25s, bounce 0.15). Text is `--text`.
   - **Others:** `--text-muted`, turning `--text` on hover.

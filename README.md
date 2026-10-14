@@ -2,8 +2,9 @@
 
 A small user-analytics product built for the CausalFunnel Full Stack Engineer assignment. A plain JavaScript tracker records page views and clicks on any website and sends them to a Next.js API, which stores them in MongoDB. A dashboard shows traffic and conversion for the last 7, 14 or 28 days, lists every visitor session as an ordered journey, and draws click heatmaps on top of a live preview of each page at the exact screen width the clicks were made at. A demo store, "Northwind", is included so you can generate real data in a few clicks; optional seed data fills the dashboard with 150 demo journeys.
 
-- **Live demo:** `LIVE_URL/dashboard`
-- **Demo store:** `LIVE_URL/demo`
+- **Live demo:** https://causalfunnel-eight.vercel.app/dashboard
+- **Demo store:** https://causalfunnel-eight.vercel.app/demo
+- **Source code:** https://github.com/sagarjain03/causalfunnel
 
 ## Screenshots
 
@@ -95,7 +96,7 @@ flowchart LR
 **Prerequisites:** Node.js 22.6 or newer (the seed script uses Node's built-in TypeScript stripping), npm, and a MongoDB database (a free MongoDB Atlas cluster works).
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/sagarjain03/causalfunnel.git
 cd causalfunnel
 npm install
 cp .env.example .env.local
@@ -138,8 +139,8 @@ Add one script tag before `</body>`:
 
 ```html
 <script
-  src="https://LIVE_URL/tracker.js"
-  data-endpoint="https://LIVE_URL/api/events"
+  src="https://causalfunnel-eight.vercel.app/tracker.js"
+  data-endpoint="https://causalfunnel-eight.vercel.app/api/events"
   defer
 ></script>
 ```

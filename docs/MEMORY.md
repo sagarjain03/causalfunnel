@@ -5,7 +5,7 @@
 ## Current status
 - **Phase:** Submission prep done (uncommitted): README rewrite, `seed:prod`. Polish pass and Overview rebuild are committed. DB: 89 real events + 2,983 seed events (150 seeded journeys, re-seeded with tracker v4 targets).
 - **Working on (file):** none
-- **Next step:** user review + commit; deploy, then replace `LIVE_URL` in README.md and run `npm run seed:prod -- --origin <deployed origin>`.
+- **Next step:** deployed at https://causalfunnel-eight.vercel.app (repo https://github.com/sagarjain03/causalfunnel); README links filled in. Seed the deployed DB with `npm run seed:prod -- --origin https://causalfunnel-eight.vercel.app` if not done yet.
 
 ## Completed
 - [2026-10-13] Phase 0: Next.js 16.4 + React 19.3 + Tailwind v4 scaffold, shadcn config (manual: components.json, lib/utils.ts), design tokens in globals.css, deps installed, docs/ written, build passes.
@@ -95,6 +95,8 @@
   - Retook `journeys-1280.png` (viewport), `heatmap-1280.png` and `heatmap-closeup-1280.png` (they predated the seed data and the latest UI), then copied overview, journeys, journey-detail, heatmap, heatmap-closeup and 404 into `docs/images/`.
   - Noted for the README: `GET /api/sessions/{id}/events` returns `target` but not `layout_w` (the heatmap endpoint has both); tracker is ~7 KB unminified.
   - Updated the stale `target` comments in `validation.ts` and `models/event.ts` (comments only).
+
+- [2026-10-14] Favicon: `src/app/icon.svg` = the logo mark (orange rounded square + dark dot); removed the scaffold `src/app/favicon.ico`. Verified on a production build: `<link rel="icon" href="/icon.svg?…" type="image/svg+xml">`, `/icon.svg` 200; `/favicon.ico` is now 404 (demo pages have no icon link).
 
 ## Decisions & deviations from docs
 - shadcn was configured manually (registry unreachable during setup). `npx shadcn@latest add <component>` works normally on a dev machine.
